@@ -12,3 +12,7 @@ pip install -r requirments.txt
 
 ### For update dependencies
 pip freeze > requirements.txt
+
+### pytorch
+pip install torch torchvision torchaudio
+pip install ultralytics

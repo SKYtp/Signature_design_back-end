@@ -51,6 +51,15 @@ def group_cal(points):
     # group_point = np.array(group_point)
     return group_point
 
+def biggest_two_num(points):
+    number_group = []
+    group_dict = {}
+    for i in range(len(points)):
+        number_group.append(len(points[i]))
+        group_dict[len(points[i])] = i
+    number_group = sorted(number_group, reverse=True)
+    return [group_dict[number_group[0]], group_dict[number_group[1]]]
+
 def compare_two_group(points, group_num):
     group1 = points[group_num[0]]
     group2 = points[group_num[1]]
@@ -59,3 +68,29 @@ def compare_two_group(points, group_num):
         return [group_num[0], group_num[1]]
     else:
         return [group_num[1], group_num[0]]
+    
+def highest_lowest_nearest(points, group):
+    distance1 = [0, 0]
+    distance2 = [float('inf'), 0]
+    tall1 = [0, 0]
+    tall2 = [0, 0]
+    bottom1 = [0, float('inf')]
+    bottom2 = [0, float('inf')]
+    for i in range(len(points[group[0]])):
+        if (points[group[0]][i][0] > distance1[0]):
+            distance1 = points[group[0]][i]
+        if (points[group[0]][i][1] > tall1[1]):
+            tall1 = points[group[0]][i]
+        if (points[group[0]][i][1] < bottom1[1]):
+            bottom1 = points[group[0]][i]
+    for i in range(len(points[group[1]])):
+        if (points[group[1]][i][0] < distance2[0]):
+            distance2 = points[group[1]][i]
+        if (points[group[1]][i][1] > tall2[1]):
+            tall2 = points[group[1]][i]
+        if (points[group[1]][i][1] < bottom2[1]):
+            bottom2 = points[group[1]][i]
+
+    # point of [right point of first letter, left point of middle, top point of first letter, top point of middle,
+    # bottom point of first letter, bottom point of middle]
+    return [distance1, distance2, tall1, tall2, bottom1, bottom2]
