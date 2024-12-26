@@ -5,11 +5,11 @@ device = "cpu"
 print(f"Running on: {device}")
 
 # Load the trained model
-model = YOLO(r"C:\Users\poul2\Gan\cross_model\runs\detect\train5\weights\best.pt")
+model = YOLO("../model/best.pt")
 model.to(device)  # Send the model to CPU
 
 # Perform prediction (Inference) for a single image
-image_path = r"E:\Gan\testt\121.png"  # Specify the image path
+image_path = "./test_pic/6.png"  # Specify the image path
 results = model.predict(
     source=image_path,  # Use a single image
     imgsz=128,          # Resize the image (must be multiples of the stride, e.g., 128, 256, 512)
