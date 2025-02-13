@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Image</title>
+</head>
+<body>
+    <h1>Click to Generate Image</h1>
+    
+    <!-- Button to trigger image generation -->
+    <button id="generate-btn-1">Generate ส บริวาร 1</button>
+    <button id="generate-btn-2">Generate ส ประธาน 2</button>
+    <button id="generate-btn-3">Generate ข บริวาร</button>
+    
+    <!-- Area to display the generated image -->
+    <h2>Generated Image</h2>
+    <img id="generated_image_starter" src="" alt="" style="max-width: 500px;" />
+    <img id="generated_image_follower" src="" alt="" style="max-width: 500px;" />
+
+    
+    <script>
+        // Add click event listener to the button
+        document.getElementById("generate-btn-1").addEventListener("click", function() {
+            // Send an AJAX request to the backend to generate the image
+            fetch('/generate_image_starter_curve')
+                .then(response => response.json())
+                .then(data => {
+                    // Set the base64 string as the src of the image tag
+                    document.getElementById("generated_image_starter").src = "data:image/png;base64," + data.image;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        document.getElementById("generate-btn-2").addEventListener("click", function() {
+            // Send an AJAX request to the backend to generate the image
+            fetch('/generate_image_starter_hard')
+                .then(response => response.json())
+                .then(data => {
+                    // Set the base64 string as the src of the image tag
+                    document.getElementById("generated_image_starter").src = "data:image/png;base64," + data.image;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+
+        document.getElementById("generate-btn-3").addEventListener("click", function() {
+            // Send an AJAX request to the backend to generate the image
+            fetch('/generate_image_follower')
+                .then(response => response.json())
+                .then(data => {
+                    // Set the base64 string as the src of the image tag
+                    document.getElementById("generated_image_follower").src = "data:image/png;base64," + data.image;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+</body>
+</html>
