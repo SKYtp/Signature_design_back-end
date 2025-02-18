@@ -1,10 +1,12 @@
 from flask import Flask, jsonify, render_template, request, send_file
+from flask_cors import CORS
 from src import get_contour, generator
 import torch
 import os
 import base64
 
 app = Flask(__name__)
+CORS(app)  # Allow all origins
 
 @app.route('/')
 def home():
