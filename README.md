@@ -8,7 +8,7 @@ python -m venv .venv
 .venv\Scripts\activate
 
 ### For install dependencies for this project
-pip install -r requirments.txt
+pip install -r requirements.txt
 
 ### For update dependencies
 pip freeze > requirements.txt
@@ -16,3 +16,5 @@ pip freeze > requirements.txt
 ### pytorch
 pip install torch torchvision torchaudio
 pip install ultralytics
+
+pip install Flask
