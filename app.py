@@ -41,7 +41,7 @@ def from_data_to_image():
     received_data = request.get_json()
     print("Received JSON data:", received_data)
     
-    image_path = os.path.join(os.getcwd(), "public/images/final_image2.png")
+    image_path = os.path.join(os.getcwd(), "public/images/final_image.png")
     
     try:
         with open(image_path, "rb") as image_file:
