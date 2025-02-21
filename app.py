@@ -4,6 +4,7 @@ from src import get_contour, generator
 import torch
 import os
 import base64
+import json
 
 app = Flask(__name__)
 CORS(app)  # Allow all origins
@@ -42,6 +43,27 @@ def from_data_to_image():
     print("Received JSON data:", received_data)
     
     image_path = os.path.join(os.getcwd(), "public/images/final_image.png")
+
+    text = """
+    Lorem ipsum dolor sit amet, consectetur adipiscing
+    elit. Suspendisse molestie euismod interdum. Donec 
+    blandit ligula ut leo dictum, non viverra ligula ultrices. 
+    Nullam pulvinar iaculis enim, vitae eleifend justo 
+    semper ut. Nunc velit magna, feugiat a nulla eget, 
+    consequat ultricies nisl. Quisque tortor tellus
+    """
+    text += "ddddsdd"
+    text += "\ntest"
+
+    points = {
+        "point1": 1.3,
+        "point2": 2.2,
+        "point3": 3,
+        "point4": 4,
+        "point5": 5
+    }
+
+    # points = json.dumps(points)
     
     try:
         with open(image_path, "rb") as image_file:
@@ -50,10 +72,23 @@ def from_data_to_image():
         return jsonify({
             "message": "Success",
             "receivedData": received_data,
-            "image": base64_image
+            "image": base64_image,
+            "text": text,
+            "points": points
         })
     except Exception as e:
         return jsonify({"error": "Error reading image", "details": str(e)}), 500
+    
+@app.route('/get-inquiry', methods=['POST'])
+def get_inquiry():
+    received_data = request.get_json()
+    # print("Received JSON data:", received_data)
+
+    return jsonify({
+        "message": "Success",
+        "receivedData": received_data,
+    })
+
 
 
 if __name__ == '__main__':
