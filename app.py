@@ -78,7 +78,7 @@ def from_data_to_image():
     except Exception as e:
         return jsonify({"error": "Error reading image", "details": str(e)}), 500
     
-@app.route('/get-inquiry', methods=['POST'])
+@app.route('/inquiry', methods=['POST'])
 def get_inquiry():
     received_data = request.get_json()
     # print("Received JSON data:", received_data)
