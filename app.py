@@ -71,7 +71,6 @@ def from_data_to_image():
         
         return jsonify({
             "message": "Success",
-            "receivedData": received_data,
             "image": base64_image,
             "text": text,
             "points": points
