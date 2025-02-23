@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_cors import CORS
-from src import get_contour, generator
+from src import get_contour, generator, option_to_meaning
 import torch
 import os
 import base64
@@ -44,16 +44,7 @@ def from_data_to_image():
     
     image_path = os.path.join(os.getcwd(), "public/images/final_image.png")
 
-    text = """
-    Lorem ipsum dolor sit amet, consectetur adipiscing
-    elit. Suspendisse molestie euismod interdum. Donec 
-    blandit ligula ut leo dictum, non viverra ligula ultrices. 
-    Nullam pulvinar iaculis enim, vitae eleifend justo 
-    semper ut. Nunc velit magna, feugiat a nulla eget, 
-    consequat ultricies nisl. Quisque tortor tellus
-    """
-    text += "หกกหกฟกdddddddddddddddddddd"
-    text += "\ntest"
+    text = option_to_meaning.option_2_meaning(received_data)
 
     points = {
         "point1": 1.3,
