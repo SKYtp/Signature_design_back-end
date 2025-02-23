@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_cors import CORS
-from src import get_contour, generator, option_to_meaning
+from src import get_contour, generator, option_to_meaning, value_to_point
 import torch
 import os
 import base64
@@ -47,11 +47,11 @@ def from_data_to_image():
     text = option_to_meaning.option_2_meaning(received_data)
 
     points = {
-        "point1": 1.3,
-        "point2": 2.2,
-        "point3": 3,
-        "point4": 4, 
-        "point5": 5
+        "point1": value_to_point.value_2_point1(0.2), # ตำแหน่งประธานต้องอยู่ในระนาบเดียวกับตำแหน่งบริวาร
+        "point2": value_to_point.value_2_point2_3(0.5), # ความสูงบริวารต้องเป็นเศษหนึ่งส่วนสองของความสูงประธาน
+        "point3": value_to_point.value_2_point2_3(0.48), # ประธานกับบริวารต้องเว้นว่างเป็นเศษหนึ่งส่วนสองของความสูงบริวาร
+        "point4": value_to_point.value_2_point4(False), # ตัวอักษรในลายเซ็นจะต้องไม่มีการขาดของเส้นภายในตัวอักษร
+        "point5": value_to_point.value_2_point5(1, "ส") # ประธานต้องไม่มีเส้นตัดกันที่เกิดจากการเซ็น
     }
 
     # points = json.dumps(points)
