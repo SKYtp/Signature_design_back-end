@@ -5,11 +5,8 @@ import math
 import cv2
 import numpy as np
 
-def extract_all_contour_points(image_path):
-    # Load the image
-    image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-    if image is None:
-        raise ValueError(f"Image not found or cannot be loaded: {image_path}")
+def extract_all_contour_points(image_data):
+    image = image_data
 
     # Invert the image colors
     _, binary_image = cv2.threshold(image, 128, 255, cv2.THRESH_BINARY_INV)

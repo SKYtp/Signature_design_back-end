@@ -52,7 +52,7 @@ def from_data_to_image():
     semper ut. Nunc velit magna, feugiat a nulla eget, 
     consequat ultricies nisl. Quisque tortor tellus
     """
-    text += "ddddsdd"
+    text += "หกกหกฟกdddddddddddddddddddd"
     text += "\ntest"
 
     points = {
