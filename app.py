@@ -50,7 +50,7 @@ def from_data_to_image():
         "point1": 1.3,
         "point2": 2.2,
         "point3": 3,
-        "point4": 4,
+        "point4": 4, 
         "point5": 5
     }
 
