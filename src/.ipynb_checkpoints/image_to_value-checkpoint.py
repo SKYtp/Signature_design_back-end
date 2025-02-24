@@ -28,20 +28,20 @@ def final_value_contour_head(input_image):
     result = [bool(len(group_points) != 1), cross_num]
     return result
 
-#image = cv2.imread('./test_pic/21.png', cv2.IMREAD_GRAYSCALE)
-#if image is None:
-#        raise ValueError(f"Image not found or cannot be loaded")
+image = cv2.imread('./test_pic/21.png', cv2.IMREAD_GRAYSCALE)
+if image is None:
+        raise ValueError(f"Image not found or cannot be loaded")
 
-#image2 = cv2.imread('./test_pic/6.png', cv2.IMREAD_GRAYSCALE)
-#if image2 is None:
-#        raise ValueError(f"Image not found or cannot be loaded")
+image2 = cv2.imread('./test_pic/6.png', cv2.IMREAD_GRAYSCALE)
+if image2 is None:
+        raise ValueError(f"Image not found or cannot be loaded")
 # # Load the image using OpenCV
 # image2_yolo = cv2.cvtColor(image2, cv2.COLOR_GRAY2RGB)  # Convert to 3-channel RGB
 
-#asign = final_value_contour_allSig(image)
-#hsign = final_value_contour_head(image2)
-#print('--------------------------------------')
-#print(asign)
-#print(hsign)
-#print(image)
+asign = final_value_contour_allSig(image)
+hsign = final_value_contour_head(image2)
+print('--------------------------------------')
+print(asign)
+print(hsign)
+print(image)
 
