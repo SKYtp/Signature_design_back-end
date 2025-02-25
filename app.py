@@ -92,10 +92,11 @@ def from_data_to_image():
     try:
         # with open(image_path, "rb") as image_file:
         #     base64_image = f"data:image/png;base64,{base64.b64encode(image_file.read()).decode()}"
+        base64_image = f"data:image/png;base64,{sig_data.get("image")}"
         
         return jsonify({
             "message": "Success",
-            "image": sig_data.get("image"),
+            "image": base64_image,
             "text": text,
             "points": points
         })
