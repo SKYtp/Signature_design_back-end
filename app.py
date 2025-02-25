@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_cors import CORS
-from src import get_contour, generator, option_to_meaning, value_to_point
+from src import get_contour, generator, option_to_meaning, value_to_point, connect
 import torch
 import os
 import base64
@@ -42,27 +42,60 @@ def from_data_to_image():
     received_data = request.get_json()
     print("Received JSON data:", received_data)
     
-    image_path = os.path.join(os.getcwd(), "public/images/final_image.png")
+    # image_path = os.path.join(os.getcwd(), "public/images/final_image.png")
 
     text = option_to_meaning.option_2_meaning(received_data)
 
+    sig_name = received_data.get("name")
+    
+    if(received_data.get("boss") == "edge"):
+        sig_style = 1
+    else:
+        sig_style = 0
+
+    if(received_data.get("symbol") == "omega"):
+        sig_symbol = 1
+    elif(received_data.get("symbol") == "loop"):
+        sig_symbol = 2
+    else:
+        sig_symbol = 0
+    
+    if(received_data.get("tilt") == "tilt_up"):
+        sig_tilt = True
+    else:
+        sig_tilt = False
+    
+    if(received_data.get("point") == "checked_point"):
+        sig_dot = True
+    else:
+        sig_dot = False
+
+    if(received_data.get("line") == "checked_line"):
+        sig_line = True
+    else:
+        sig_line = False
+
+    sig_data = connect.v_concat(sig_name, sig_style, sig_symbol, sig_tilt, sig_dot, sig_line)
+
+
+
     points = {
-        "point1": value_to_point.value_2_point1(0.2), # ตำแหน่งประธานต้องอยู่ในระนาบเดียวกับตำแหน่งบริวาร
-        "point2": value_to_point.value_2_point2_3(0.5), # ความสูงบริวารต้องเป็นเศษหนึ่งส่วนสองของความสูงประธาน
-        "point3": value_to_point.value_2_point2_3(0.48), # ประธานกับบริวารต้องเว้นว่างเป็นเศษหนึ่งส่วนสองของความสูงบริวาร
-        "point4": value_to_point.value_2_point4(False), # ตัวอักษรในลายเซ็นจะต้องไม่มีการขาดของเส้นภายในตัวอักษร
-        "point5": value_to_point.value_2_point5(1, "ส") # ประธานต้องไม่มีเส้นตัดกันที่เกิดจากการเซ็น
+        "point1": value_to_point.value_2_point1(sig_data.get("angle")), # ตำแหน่งประธานต้องอยู่ในระนาบเดียวกับตำแหน่งบริวาร
+        "point2": value_to_point.value_2_point2_3(sig_data.get("tall_ratio")), # ความสูงบริวารต้องเป็นเศษหนึ่งส่วนสองของความสูงประธาน
+        "point3": value_to_point.value_2_point2_3(sig_data.get("distance")), # ประธานกับบริวารต้องเว้นว่างเป็นเศษหนึ่งส่วนสองของความสูงบริวาร
+        "point4": value_to_point.value_2_point4(sig_data.get("head_broken")), # ตัวอักษรในลายเซ็นจะต้องไม่มีการขาดของเส้นภายในตัวอักษร
+        "point5": value_to_point.value_2_point5(sig_data.get("head_cross"), sig_data.get("head_is")) # ประธานต้องไม่มีเส้นตัดกันที่เกิดจากการเซ็น
     }
 
     # points = json.dumps(points)
     
     try:
-        with open(image_path, "rb") as image_file:
-            base64_image = f"data:image/png;base64,{base64.b64encode(image_file.read()).decode()}"
+        # with open(image_path, "rb") as image_file:
+        #     base64_image = f"data:image/png;base64,{base64.b64encode(image_file.read()).decode()}"
         
         return jsonify({
             "message": "Success",
-            "image": base64_image,
+            "image": sig_data.get("image"),
             "text": text,
             "points": points
         })
