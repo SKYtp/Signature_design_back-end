@@ -1,7 +1,7 @@
-from get_contour import *
-from distance_tall import distance_and_tall_of_two_group
-from angle_of_signature import angle_of_signature
-from cross_check import get_cross
+from src.get_contour import *
+from src.distance_tall import distance_and_tall_of_two_group
+from src.angle_of_signature import angle_of_signature
+from src.cross_check import get_cross
 import cv2
 
 def final_value_contour_allSig(input_image):

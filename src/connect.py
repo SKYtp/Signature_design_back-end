@@ -7,8 +7,8 @@ from torchvision import transforms
 import os
 import matplotlib.pyplot as plt
 import numpy as np
-from image_to_value import*
-from get_contour import*
+from src.image_to_value import*
+from src.get_contour import*
 
 def image_to_base64(image):
     # แปลงรูปเป็น buffer (JPEG format)
