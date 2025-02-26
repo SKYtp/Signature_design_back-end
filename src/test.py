@@ -211,29 +211,6 @@ def rgb2gray(image):
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return image
-def genImage_for_one(name, style):
-    model_path = r"./model"
-    f_pos = ['ว','ส','ป']
-    image=[]
-    h_ratio = None
-    omega = None
-    loop = None
-    consonant=[]
-    
-    if name in f_pos:
-        consonant.append(name)
-
-    if consonant[0] in f_pos:
-        c = consonant[0]
-        generator = load_model(0,c,model_path).to(device)
-        pic = rgb2gray(generate(0,generator,torch.tensor([style])))
-        while final_value_contour_head(pic)[0]:
-            pic = rgb2gray(generate(0,generator,torch.tensor([style])))
-            
-        head = final_value_contour_head(pic)
-        image.append(pic)
-    return image , consonant , omega , loop , head ,  h_ratio
-
 
 def genImage(name, style, nothing_omega_loop):
     model_path = r"./model"
@@ -386,7 +363,7 @@ def front_find_right_top(image):
     #หาจุดสูงสุดทางขวา
     index_top=125
     for i, pos in enumerate(black_pixel_positions):
-        if pos[0]<=index_top and pos[1]>=point_right[1]-6:
+        if pos[0]<=index_top and pos[1]>=point_right[1]-4:
             index_top=pos[0]
             point_top_right=black_pixel_positions[i]
     p0=np.array([point_top_right[1] ,point_top_right[0]])
@@ -426,7 +403,7 @@ def back_find_left_top(image, width):
         if pos[0]<=index_top and pos[1]<=point_left[1]+2:
             index_top=pos[0]
             point_topleft=black_pixel_positions[i]
-    p2=np.array([point_topleft[1]+width ,point_topleft[0]])
+    p2=np.array([point_topleft[1]+width+4 ,point_topleft[0]])
     back_letter=0
     return p2 , back_letter
 
@@ -444,7 +421,7 @@ def back_find_left_bottom(image, width):
         if pos[0]>=index_bottom and pos[1]<=point_left[1]+3:
             index_bottom=pos[0]
             point_bottomleft=black_pixel_positions[i]
-    p2=np.array([point_bottomleft[1]+width ,point_bottomleft[0]])
+    p2=np.array([point_bottomleft[1]+width+4 ,point_bottomleft[0]])
     back_letter=1
     return p2 , back_letter
 
@@ -462,7 +439,7 @@ def back_find_top_left(image, width):
         if pos[1]<=index_left and pos[0]<= point_top[0]+3:
             index_left=pos[1]
             point_topleft=black_pixel_positions[i]
-    p2=np.array([point_topleft[1]+width ,point_topleft[0]])
+    p2=np.array([point_topleft[1]+width+4 ,point_topleft[0]])
     back_letter=0
     return p2 , back_letter
 
@@ -480,7 +457,7 @@ def back_find_bottom_left(image, width):
         if pos[1]<=index_left and pos[0] >= point_bottom[0]-3:
             index_left=pos[1]
             point_bottomleft=black_pixel_positions[i]
-    p2=np.array([point_bottomleft[1]+width ,point_bottomleft[0]])
+    p2=np.array([point_bottomleft[1]+width+4 ,point_bottomleft[0]])
     back_letter=1
     return p2 , back_letter
 
@@ -492,7 +469,7 @@ def back_find_left(image, width):
         if pos[1]<=index_left:
             index_left=pos[1]
             point_left=black_pixel_positions[i]
-    p2=np.array([point_left[1]+width ,point_left[0]])
+    p2=np.array([point_left[1]+width+4 ,point_left[0]])
     back_letter = 0
     return p2 , back_letter
 
@@ -548,7 +525,6 @@ def find_point_final_letter(consonant, image, width):
     return p2 , back_letter
 
 def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
-    s_pos = ['ก','ข','ฃ','ค','ฅ','ฆ','ง','จ','ฉ','ช','ซ','ฌ','ญ','ฎ','ฏ','ฐ','ฑ','ฒ','ณ','ด','ต','ถ','ท','ธ','น','บ','ป','ผ','ฝ','พ','ฟ','ภ','ม','ย','ร','ล','ว','ศ','ษ','ส','ห','ฬ','อ','ฮ']
     cant_connect = ['ง','จ','ฉ','ฎ','ฏ','ล','ว','อ']
     s_pos_top = ['ข','ฃ','ฆ','ช','ซ','ฌ','ญ','ฐ','ฒ','ณ','ธ','น','บ','ป','ผ','ฝ','พ','ฟ','ม','ย','ร','ศ','ษ','ส','ฬ','ฮ']
     s_pos_bottom = ['ก','ค','ฅ','ฑ','ด','ต','ถ','ท','ภ','ห','ฤ']
@@ -560,16 +536,7 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
     p0 = []
     p1 = []
     p2 = []
-    consonant = []
-    for i in name:
-        if i in s_pos:
-            consonant.append(i)
-    if len(name)<1:
-        return 
-    if len(consonant)<2:
-        image , consonant , omega , loop , head , h_ratio = genImage_for_one(name,style)
-    else:
-        image , consonant , omega , loop , head , h_ratio = genImage(name,style,nothing_omega_loop)
+    image , consonant , omega , loop , head , h_ratio = genImage(name,style,nothing_omega_loop)
     print(consonant)
     #for i in image:
     #    plt.imshow(i, cmap="gray", interpolation="none")
@@ -594,19 +561,7 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
         if padded is None:
             print("padded_imageไม่สามารถโหลดภาพได้")
         padded_image.append(padded)
-    if len(consonant)<2:
-        base64_string = image_to_base64(padded)
-        result = {
-        "image" : base64_string,
-        "head_broken" : head[0],
-        "head_cross" : head[1],
-        "head_is" : consonant[0],
-        "distance" : 0.5,
-        "tall_ratio" : 0.5,
-        "angle" : 0
-        }
-        return result
-        
+
     
     if nothing_omega_loop == 0:
         for n in range(len(consonant)-1):
@@ -638,89 +593,82 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
                 
 
             else:
-                if len(consonant)>1:
-                    if n==1 and consonant[1] in cant_connect:
-                        image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 3, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-                        image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
-                    else:
-                        height, width = image_concat1.shape
-                        if n == 1:
-                            if consonant[1] in s_pos_top:
-                                p0 , front_letter = front_find_right_top(image_concat1)
-                            else:
-                                p0 , front_letter = front_find_right_bottom(image_concat1)
+                if n==1 and consonant[1] in cant_connect:
+                    image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 3, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+                    image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
+                else:
+                    height, width = image_concat1.shape
+                    if n == 1:
+                        if consonant[1] in s_pos_top:
+                            p0 , front_letter = front_find_right_top(image_concat1)
+                        else:
+                            p0 , front_letter = front_find_right_bottom(image_concat1)
+                            
+                        if omega == 0 :
+                            p2 , back_letter = back_find_left_top(padded_image[n+1], width)
+                            
+                        elif omega == 1:
+                            p2 , back_letter = back_find_left_bottom(padded_image[n+1], width)
+
+                        elif loop == 0:
+                            p2 , back_letter = back_find_top_left(padded_image[n+1], width)
+                            
+                        elif loop == 1:
+                            p2 , back_letter = back_find_bottom_left(padded_image[n+1], width)
                                 
+                        else:
+                            p2 , back_letter = find_point_final_letter(consonant[-1], padded_image[n+1], width)
+
+                    else:
+                        if omega == 0 or loop == 0:
+                            p0 , front_letter = front_find_right_top(image_concat1)
+                                
+                        elif omega == 1 or loop == 1:
+                            p0 , front_letter = front_find_right_bottom(image_concat1)
+                            
+                        if n != len(consonant)-2:
                             if omega == 0 :
                                 p2 , back_letter = back_find_left_top(padded_image[n+1], width)
-                                p2[0]+=4
-
+    
                             elif omega == 1:
                                 p2 , back_letter = back_find_left_bottom(padded_image[n+1], width)
-                                p2[0]+=4
-
+                            
                             elif loop == 0:
                                 p2 , back_letter = back_find_top_left(padded_image[n+1], width)
-                                p2[0]+=4
-                                
-                            elif loop == 1:
+
+                            else:
                                 p2 , back_letter = back_find_bottom_left(padded_image[n+1], width)
-                                p2[0]+=4
-                                    
-                            else:
-                                p2 , back_letter = find_point_final_letter(consonant[-1], padded_image[n+1], width)
-                                p2[0]+=4
-
-                        else:
-                            if omega == 0 or loop == 0:
-                                p0 , front_letter = front_find_right_top(image_concat1)
-                                    
-                            elif omega == 1 or loop == 1:
-                                p0 , front_letter = front_find_right_bottom(image_concat1)
                                 
-                            if n != len(consonant)-2:
-                                if omega == 0 :
-                                    p2 , back_letter = back_find_left_top(padded_image[n+1], width)
-        
-                                elif omega == 1:
-                                    p2 , back_letter = back_find_left_bottom(padded_image[n+1], width)
-                                
-                                elif loop == 0:
-                                    p2 , back_letter = back_find_top_left(padded_image[n+1], width)
-
-                                else:
-                                    p2 , back_letter = back_find_bottom_left(padded_image[n+1], width)
-                                    
-                            else:
-                                p2 , back_letter = find_point_final_letter(consonant[-1], padded_image[n+1], width)
-                                p2[0]+=4
-                        
-                        if n == 1 or n == len(consonant)-2:
-                            image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 4, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-                            image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
                         else:
-                            image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-                            image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
-
+                            p2 , back_letter = find_point_final_letter(consonant[-1], padded_image[n+1], width)
                     
-                        if front_letter == back_letter:
-                            if front_letter==0:
-                                p1=np.array([p0[0]+2 ,p0[1]-5])
-                            else:
-                                p1=np.array([p0[0]+2 ,p0[1]+5])
-            
+                    if n == 1 or n == len(consonant)-2:
+                        image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 4, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+                        image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
+                    else:
+                        image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 0, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+                        image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
+
+                
+                    if front_letter == back_letter:
+                        if front_letter==0:
+                            p1=np.array([p0[0]+2 ,p0[1]-5])
                         else:
-                            if front_letter==0:
-                                p1=np.array([p0[0] ,p2[1]])
-                            else:
-                                p1=np.array([p0[0] ,p2[1]])
-                        print(f'รอบ{n} {p0},{p1},{p2}')        
-                        curve_points = []
-                        for t in np.linspace(0, 1, 5):  # t จาก 0 ถึง 1
-                            point = quadratic_bezier(t, p0, p1, p2)
-                            curve_points.append(point)
-                        curve_points = np.array(curve_points, dtype=np.int32)
-                        for i in range(len(curve_points) - 1):
-                            cv2.line(image_concat1, curve_points[i], curve_points[i+1], (0, 255, 0), 2, cv2.LINE_AA)
+                            p1=np.array([p0[0]+2 ,p0[1]+5])
+        
+                    else:
+                        if front_letter==0:
+                            p1=np.array([p0[0] ,p2[1]])
+                        else:
+                            p1=np.array([p0[0] ,p2[1]])
+                    print(f'รอบ{n} {p0},{p1},{p2}')        
+                    curve_points = []
+                    for t in np.linspace(0, 1, 5):  # t จาก 0 ถึง 1
+                        point = quadratic_bezier(t, p0, p1, p2)
+                        curve_points.append(point)
+                    curve_points = np.array(curve_points, dtype=np.int32)
+                    for i in range(len(curve_points) - 1):
+                        cv2.line(image_concat1, curve_points[i], curve_points[i+1], (0, 255, 0), 2, cv2.LINE_AA)
 
     if dot:
         if line:
@@ -734,7 +682,7 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
             #หาจุดขวาสุด
             index_right=0
             for i, pos in enumerate(black_pixel_positions):
-                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
+                if pos[1]>=index_right:
                     index_right=pos[1]
                     point_bottom_right=black_pixel_positions[i]
             w = point_bottom_right[1]
@@ -757,7 +705,7 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
             #หาจุดขวาสุด
             index_right=0
             for i, pos in enumerate(black_pixel_positions):
-                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
+                if pos[1]>=index_right:
                     index_right=pos[1]
                     point_bottom_right=black_pixel_positions[i]
             w = point_bottom_right[1]
@@ -776,7 +724,7 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
             #หาจุดขวาสุด
             index_right=0
             for i, pos in enumerate(black_pixel_positions):
-                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
+                if pos[1]>=index_right:
                     index_right=pos[1]
                     point_bottom_right=black_pixel_positions[i]
             w = point_bottom_right[1]
