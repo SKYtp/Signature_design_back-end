@@ -1,10 +1,24 @@
 import numpy as np
 
 def value_2_point1(x): # ตำแหน่งประธานต้องอยู่ในระนาบเดียวกับตำแหน่งบริวาร
-    return np.round(1 - 0.000256 * (x - 0)**4, 5)
+    result = np.round(1 - 0.000256 * (x - 0)**4, 5)
+    if(result > 1):
+        return 1
+    elif(result > 0):
+        return result
+    else:
+        return 0
+    # return np.round(1 - 0.000256 * (x - 0)**4, 5)
 
 def value_2_point2_3(x): # ความสูงบริวารต้องเป็นเศษหนึ่งส่วนสองของความสูงประธาน, ประธานกับบริวารต้องเว้นว่างเป็นเศษหนึ่งส่วนสองของความสูงบริวาร
-    return np.round(1 - 1600 * (x - 0.5)**4, 5)
+    result = np.round(1 - 1600 * (x - 0.5)**4, 5)
+    if(result > 1):
+        return 1
+    elif(result > 0):
+        return result
+    else:
+        return 0
+    # return np.round(1 - 1600 * (x - 0.5)**4, 5)
 
 def value_2_point4(x): # ตัวอักษรในลายเซ็นจะต้องไม่มีการขาดของเส้นภายในตัวอักษร
     if(x == False):
