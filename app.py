@@ -93,7 +93,7 @@ def from_data_to_image():
     try:
         # with open(image_path, "rb") as image_file:
         #     base64_image = f"data:image/png;base64,{base64.b64encode(image_file.read()).decode()}"
-        base64_image = f"data:image/png;base64,{sig_data.get("image")}"
+        base64_image = f"data:image/png;base64,{sig_data.get('image')}"
         
         return jsonify({
             "message": "Success",
@@ -117,4 +117,8 @@ def get_inquiry():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+
+    try:
+        app.run(debug=True, port=8080)
+    except Exception as e:
+        print(f"App crashed: {e}")
