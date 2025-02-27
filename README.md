@@ -18,3 +18,6 @@ pip install torch torchvision torchaudio
 pip install ultralytics
 
 pip install Flask
+
+
+flask run --host=0.0.0.0 --port=8080
