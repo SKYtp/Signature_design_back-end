@@ -547,6 +547,80 @@ def find_point_final_letter(consonant, image, width):
 
     return p2 , back_letter
 
+def dot_line(image, dot, line):
+
+    if dot:
+        if line:
+            black_pixel_positions = np.column_stack(np.where(image <= 10))
+            #หาจุดต่ำสุด
+            index_bottom=0
+            for i, pos in enumerate(black_pixel_positions):
+                if pos[0]>=index_bottom:
+                    index_bottom=pos[0]
+                    point_bottom=black_pixel_positions[i]
+            #หาจุดขวาสุด
+            index_right=0
+            for i, pos in enumerate(black_pixel_positions):
+                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
+                    index_right=pos[1]
+                    point_bottom_right=black_pixel_positions[i]
+            w = point_bottom_right[1]
+            image = cv2.copyMakeBorder(image, 0, 0, 0, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+            point = (w,110)
+            draw_line = draw_diagonal_line(image, point, 15)
+            image = draw_line[0]
+            line_end = draw_line[1]
+            dot_point = [(line_end[0]+5,line_end[1]-5)]
+            image = add_black_dots(image, dot_point, 3)
+
+        else:
+            black_pixel_positions = np.column_stack(np.where(image <= 10))
+            #หาจุดต่ำสุด
+            index_bottom=0
+            for i, pos in enumerate(black_pixel_positions):
+                if pos[0]>=index_bottom:
+                    index_bottom=pos[0]
+                    point_bottom=black_pixel_positions[i]
+            #หาจุดขวาสุด
+            index_right=0
+            for i, pos in enumerate(black_pixel_positions):
+                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
+                    index_right=pos[1]
+                    point_bottom_right=black_pixel_positions[i]
+            w = point_bottom_right[1]
+            point = [(w+3, 99)]
+            image = cv2.copyMakeBorder(image, 0, 0, 0, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+            image = add_black_dots(image,point, 3)
+    else:
+        if line:
+            black_pixel_positions = np.column_stack(np.where(image <= 10))
+            #หาจุดต่ำสุด
+            index_bottom=0
+            for i, pos in enumerate(black_pixel_positions):
+                if pos[0]>=index_bottom:
+                    index_bottom=pos[0]
+                    point_bottom=black_pixel_positions[i]
+            #หาจุดขวาสุด
+            index_right=0
+            for i, pos in enumerate(black_pixel_positions):
+                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
+                    index_right=pos[1]
+                    point_bottom_right=black_pixel_positions[i]
+            w = point_bottom_right[1]
+            image = cv2.copyMakeBorder(image, 0, 0, 0, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+            point = (w,110)
+            draw_line = draw_diagonal_line(image, point, 15)
+            image = draw_line[0]
+
+    image = cv2.copyMakeBorder(image, 0, 0, 0, 30, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+    return image
+
+def if_tilt(image, tilt):
+    if tilt:
+        image = cv2.copyMakeBorder(image, 0, 20, 20, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+        image = rotate_image(image,15)
+    return image
+
 def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
     s_pos = ['ก','ข','ฃ','ค','ฅ','ฆ','ง','จ','ฉ','ช','ซ','ฌ','ญ','ฎ','ฏ','ฐ','ฑ','ฒ','ณ','ด','ต','ถ','ท','ธ','น','บ','ป','ผ','ฝ','พ','ฟ','ภ','ม','ย','ร','ล','ว','ศ','ษ','ส','ห','ฬ','อ','ฮ']
     cant_connect = ['ง','จ','ฉ','ฎ','ฏ','ล','ว','อ']
@@ -594,7 +668,10 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
         if padded is None:
             print("padded_imageไม่สามารถโหลดภาพได้")
         padded_image.append(padded)
+
     if len(consonant)<2:
+        padded = dot_line(padded, dot, line)
+        padded = if_tilt(padded, tilt)
         base64_string = image_to_base64(padded)
         result = {
         "image" : base64_string,
@@ -721,75 +798,9 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
                         curve_points = np.array(curve_points, dtype=np.int32)
                         for i in range(len(curve_points) - 1):
                             cv2.line(image_concat1, curve_points[i], curve_points[i+1], (0, 255, 0), 2, cv2.LINE_AA)
-
-    if dot:
-        if line:
-            black_pixel_positions = np.column_stack(np.where(image_concat1 <= 10))
-            #หาจุดต่ำสุด
-            index_bottom=0
-            for i, pos in enumerate(black_pixel_positions):
-                if pos[0]>=index_bottom:
-                    index_bottom=pos[0]
-                    point_bottom=black_pixel_positions[i]
-            #หาจุดขวาสุด
-            index_right=0
-            for i, pos in enumerate(black_pixel_positions):
-                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
-                    index_right=pos[1]
-                    point_bottom_right=black_pixel_positions[i]
-            w = point_bottom_right[1]
-            image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-            point = (w,110)
-            draw_line = draw_diagonal_line(image_concat1, point, 15)
-            image_concat1 = draw_line[0]
-            line_end = draw_line[1]
-            dot_point = [(line_end[0]+5,line_end[1]-5)]
-            image_concat1 = add_black_dots(image_concat1,dot_point, 3)
-
-        else:
-            black_pixel_positions = np.column_stack(np.where(image_concat1 <= 10))
-            #หาจุดต่ำสุด
-            index_bottom=0
-            for i, pos in enumerate(black_pixel_positions):
-                if pos[0]>=index_bottom:
-                    index_bottom=pos[0]
-                    point_bottom=black_pixel_positions[i]
-            #หาจุดขวาสุด
-            index_right=0
-            for i, pos in enumerate(black_pixel_positions):
-                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
-                    index_right=pos[1]
-                    point_bottom_right=black_pixel_positions[i]
-            w = point_bottom_right[1]
-            point = [(w+3, 99)]
-            image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-            image_concat1 = add_black_dots(image_concat1,point, 3)
-    else:
-        if line:
-            black_pixel_positions = np.column_stack(np.where(image_concat1 <= 10))
-            #หาจุดต่ำสุด
-            index_bottom=0
-            for i, pos in enumerate(black_pixel_positions):
-                if pos[0]>=index_bottom:
-                    index_bottom=pos[0]
-                    point_bottom=black_pixel_positions[i]
-            #หาจุดขวาสุด
-            index_right=0
-            for i, pos in enumerate(black_pixel_positions):
-                if pos[1]>=index_right and pos[0]>= point_bottom[0]-5:
-                    index_right=pos[1]
-                    point_bottom_right=black_pixel_positions[i]
-            w = point_bottom_right[1]
-            image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-            point = (w,110)
-            draw_line = draw_diagonal_line(image_concat1, point, 15)
-            image_concat1 = draw_line[0]
-
-    image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 30, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+    image_concat1 = dot_line(image_concat1, dot, line)
+    image_concat1 = if_tilt(image_concat1, tilt)
     
-    if tilt:
-        image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 20, 0, 20, cv2.BORDER_CONSTANT, value=(255, 255, 255))
-        image_concat1 = rotate_image(image_concat1,15)
     blur = cv2.GaussianBlur(image_concat1, (3,3), 0, borderType=cv2.BORDER_REPLICATE)
     base64_string = image_to_base64(image_concat1)
     result = {
