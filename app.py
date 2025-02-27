@@ -77,7 +77,7 @@ def from_data_to_image():
 
     sig_data = connect.v_concat(sig_name, sig_style, sig_symbol, sig_tilt, sig_dot, sig_line)
 
-    print("angle: ",sig_data.get("angle")," tall_ratio: ",sig_data.get("tall_ratio")," distance: ",sig_data.get("distance"))
+    print("angle: ",sig_data.get("angle")," tall_ratio: ",sig_data.get("tall_ratio")," distance: ",sig_data.get("distance"), " head_broken: ",sig_data.get("head_broken"), " head_cross: ",sig_data.get("head_cross"))
 
     points = {
         "point1": value_to_point.value_2_point1(sig_data.get("angle")), # ตำแหน่งประธานต้องอยู่ในระนาบเดียวกับตำแหน่งบริวาร
