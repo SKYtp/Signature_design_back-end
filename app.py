@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_cors import CORS
-from src import get_contour, generator, option_to_meaning, value_to_point, connect
+from src import get_contour, generator, option_to_meaning, value_to_point, connect, contrast
 import torch
 import os
 import base64
@@ -93,7 +93,8 @@ def from_data_to_image():
     try:
         # with open(image_path, "rb") as image_file:
         #     base64_image = f"data:image/png;base64,{base64.b64encode(image_file.read()).decode()}"
-        base64_image = f"data:image/png;base64,{sig_data.get('image')}"
+        base64_image = contrast.increase_contrast(sig_data.get('image'), 5.0)
+        base64_image = f"data:image/png;base64,{base64_image}"
         
         return jsonify({
             "message": "Success",
