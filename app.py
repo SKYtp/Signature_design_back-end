@@ -93,7 +93,7 @@ def from_data_to_image():
     try:
         # with open(image_path, "rb") as image_file:
         #     base64_image = f"data:image/png;base64,{base64.b64encode(image_file.read()).decode()}"
-        base64_image = contrast.increase_contrast(sig_data.get('image'), 5.0)
+        base64_image = contrast.increase_contrast(sig_data.get('image'), 1.7)
         base64_image = f"data:image/png;base64,{base64_image}"
         
         return jsonify({
