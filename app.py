@@ -1,49 +1,68 @@
-from flask import Flask, jsonify, render_template, request, send_file
-from flask_cors import CORS
-from src import get_contour, generator, option_to_meaning, value_to_point, connect, contrast
+from quart import Quart, jsonify, render_template, request
+from quart_cors import cors  # For handling CORS in Quart (similar to Flask-CORS)
+import aiomysql
 import torch
+from src import get_contour, generator, option_to_meaning, value_to_point, connect, contrast
 import os
-import base64
-import json
+from dotenv import load_dotenv
 
-app = Flask(__name__)
-CORS(app)  # Allow all origins
+app = Quart(__name__)
+app = cors(app)
+
+load_dotenv()
+
+async def get_db_connection():
+    # Fetch values from environment variables
+    db_host = os.getenv('DB_HOST', 'localhost')  # Default to 'localhost' if not found
+    db_user = os.getenv('DB_USER', 'root')
+    db_password = os.getenv('DB_PASSWORD', 'idk_try_to_guess?')
+    db_name = os.getenv('DB_NAME', 'db_name')
+    db_min_size = int(os.getenv('DB_MIN_SIZE', 5))  
+    db_max_size = int(os.getenv('DB_MAX_SIZE', 10)) 
+
+    # Create the connection pool using environment variables
+    return await aiomysql.create_pool(
+        host=db_host,
+        user=db_user,
+        password=db_password,
+        db=db_name,
+        minsize=db_min_size,
+        maxsize=db_max_size
+    )
 
 @app.route('/')
-def home():
-    return render_template("index.html")
+async def home():
+    return await render_template("index.html")
 
 @app.route('/contour')
-def test_contour():
+async def test_contour():
     image_path = './test_pic/'
-    all_contour = get_contour.extract_all_contour_points(image_path + '21.png')
-    return all_contour.tolist()
+    all_contour = await get_contour.extract_all_contour_points(image_path + '21.png')
+    return jsonify(all_contour)
 
 @app.route('/generate_image_starter_curve')
-def generate_image_starter_curve():
+async def generate_image_starter_curve():
     model = "ส_starter"
-    base64_image = generator.generate(model, torch.tensor([0]))
+    base64_image = await generator.generate(model, torch.tensor([0]))
     return jsonify(image=base64_image, status=200)
 
 @app.route('/generate_image_starter_hard')
-def generate_image_starter_hard():
+async def generate_image_starter_hard():
     model = "ส_starter"
-    base64_image = generator.generate(model, torch.tensor([1]))
+    base64_image = await generator.generate(model, torch.tensor([1]))
     return jsonify(image=base64_image, status=200)
 
 @app.route('/generate_image_follower')
-def generate_image_follower():
+async def generate_image_follower():
     model = "ข_follower_front"
-    base64_image = generator.generate(model)
+    base64_image = await generator.generate(model)
     return jsonify(image=base64_image, status=200)
 
 @app.route('/from-data-to-image', methods=['POST'])
-def from_data_to_image():
-    received_data = request.get_json()
+async def from_data_to_image():
+    received_data = await request.get_json()
     print("Received JSON data:", received_data)
     
-    # image_path = os.path.join(os.getcwd(), "public/images/final_image.png")
-
     text = option_to_meaning.option_2_meaning(received_data)
 
     sig_name = received_data.get("name")
@@ -80,19 +99,17 @@ def from_data_to_image():
     print("angle: ",sig_data.get("angle")," tall_ratio: ",sig_data.get("tall_ratio")," distance: ",sig_data.get("distance"), " head_broken: ",sig_data.get("head_broken"), " head_cross: ",sig_data.get("head_cross"))
 
     points = {
-        "point1": value_to_point.value_2_point1(sig_data.get("angle")), # ตำแหน่งประธานต้องอยู่ในระนาบเดียวกับตำแหน่งบริวาร
-        "point2": value_to_point.value_2_point2_3(sig_data.get("tall_ratio")), # ความสูงบริวารต้องเป็นเศษหนึ่งส่วนสองของความสูงประธาน
-        "point3": value_to_point.value_2_point2_3(sig_data.get("distance")), # ประธานกับบริวารต้องเว้นว่างเป็นเศษหนึ่งส่วนสองของความสูงบริวาร
-        "point4": value_to_point.value_2_point4(sig_data.get("head_broken")), # ตัวอักษรในลายเซ็นจะต้องไม่มีการขาดของเส้นภายในตัวอักษร
-        "point5": value_to_point.value_2_point5(sig_data.get("head_cross"), sig_data.get("head_is")) # ประธานต้องไม่มีเส้นตัดกันที่เกิดจากการเซ็น
+        "point1": value_to_point.value_2_point1(sig_data.get("angle")),
+        "point2": value_to_point.value_2_point2_3(sig_data.get("tall_ratio")),
+        "point3": value_to_point.value_2_point2_3(sig_data.get("distance")),
+        "point4": value_to_point.value_2_point4(sig_data.get("head_broken")),
+        "point5": value_to_point.value_2_point5(sig_data.get("head_cross"), sig_data.get("head_is"))
     }
 
     print(points)
-    # points = json.dumps(points)
     
     try:
-        # with open(image_path, "rb") as image_file:
-        #     base64_image = f"data:image/png;base64,{base64.b64encode(image_file.read()).decode()}"
+        # Assuming image is generated asynchronously
         base64_image = contrast.increase_contrast(sig_data.get('image'), 1.7)
         base64_image = f"data:image/png;base64,{base64_image}"
         
@@ -104,21 +121,98 @@ def from_data_to_image():
         })
     except Exception as e:
         return jsonify({"error": "Error reading image", "details": str(e)}), 500
-    
+
+async def insert_inquiry_to_db(data):
+    pool = await get_db_connection()
+    async with pool.acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cursor:  # Ensure correct cursor type
+            query = """
+                INSERT INTO inquiries (category_1, category_2, category_3, category_4, image, 
+                                       name_input, boss, tilt, symbol, checkbox_point, checkbox_line, 
+                                       sig_point1, sig_point2, sig_point3, sig_point4, sig_point5, text)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            
+            # Extract sig_point values safely
+            sig_point = data.get('sig_point', {})
+            point1 = int(sig_point.get('point1', 0))
+            point2 = int(sig_point.get('point2', 0))
+            point3 = int(sig_point.get('point3', 0))
+            point4 = int(sig_point.get('point4', 0))
+            point5 = int(sig_point.get('point5', 0))
+
+            # Print debug info
+            print(f"Sig Points: {point1}, {point2}, {point3}, {point4}, {point5}")
+
+            # Debug query parameters
+            query = """
+            INSERT INTO inquiries (
+                category_1, category_2, category_3, category_4, image, 
+                name_input, boss, tilt, symbol, checkbox_point, checkbox_line, 
+                sig_point1, sig_point2, sig_point3, sig_point4, sig_point5, text
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            # Convert data to appropriate types
+            params = (
+                int(data.get("category_1", 0)),  # Ensure integer
+                int(data.get("category_2", 0)),
+                int(data.get("category_3", 0)),
+                int(data.get("category_4", 0)),
+                data.get("image", ""),  # TEXT
+                data.get("name_input", ""),  # VARCHAR(255)
+                data.get("boss", ""),  # VARCHAR(255)
+                data.get("tilt", ""),  # VARCHAR(255)
+                data.get("symbol", ""),  # VARCHAR(255)
+                data.get("checkbox_point", ""),  # Now treated as VARCHAR(255)
+                data.get("checkbox_line", ""),  # Now treated as VARCHAR(255)
+                int(data.get("sig_point1", 0)),  # Ensure integer
+                int(data.get("sig_point2", 0)),
+                int(data.get("sig_point3", 0)),
+                int(data.get("sig_point4", 0)),
+                int(data.get("sig_point5", 0)),
+                data.get("text", "")  # TEXT
+            )
+            print("Executing Query: ", query)
+            print("Query Parameters: ", params)
+
+            # Execute query
+            await cursor.execute(query, params)
+            await conn.commit()
+            return cursor.lastrowid  # Return inserted ID
+
 @app.route('/inquiry', methods=['POST'])
-def get_inquiry():
-    received_data = request.get_json()
-    # print("Received JSON data:", received_data)
+async def get_inquiry():
+    received_data = await request.get_json()
+    print("Received JSON data:", received_data)
 
-    return jsonify({
-        "message": "Success",
-        "receivedData": received_data,
-    })
+    try:
+        # Insert the inquiry data into the database
+        inquiry_id = await insert_inquiry_to_db(received_data)
 
+        # Extract the individual sig_point values (you can return them in the response if needed)
+        sig_point = received_data.get('sig_point', {})
+        question_scores = {
+            "question_1_score": sig_point.get('point1', 0),
+            "question_2_score": sig_point.get('point2', 0),
+            "question_3_score": sig_point.get('point3', 0),
+            "question_4_score": sig_point.get('point4', 0),
+            "question_5_score": sig_point.get('point5', 0)
+        }
 
+        return jsonify({
+            "message": "Success",
+            "receivedData": received_data,
+            "inquiryId": inquiry_id,
+            "questionScores": question_scores  # Add the question scores to the response
+        })
+    except Exception as e:
+        return jsonify({
+            "error": "Error saving inquiry to the database",
+            "details": str(e)
+        }), 500
 
 if __name__ == '__main__':
-
     try:
         app.run(debug=True, port=8080)
     except Exception as e:
