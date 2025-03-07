@@ -1,0 +1,31 @@
+.popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+    z-index: 990;
+}
+.popup p {
+    font-size: 18px;
+    margin: 0 0 15px;
+}
+.popup button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    background: #F37B2A;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background 0.3s;
+}
+.popup button:hover {
+    background: #E46424;
+}

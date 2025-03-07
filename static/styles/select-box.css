@@ -1,0 +1,35 @@
+.custom-select {
+    position: relative;
+    width: 250px;
+}
+
+select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #F37B2A;
+    border-radius: 8px;
+    background-color: #fff;
+    appearance: none;
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+}
+
+/* Custom Arrow */
+.custom-select::after {
+    content: "▼";
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #F37B2A;
+    font-size: 12px;
+}
+
+select:focus {
+    outline: none;
+    border-color: #E46424;
+    box-shadow: 0 0 5px rgba(255, 101, 41, 0.747);
+}

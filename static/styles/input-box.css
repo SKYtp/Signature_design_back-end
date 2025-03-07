@@ -1,0 +1,25 @@
+.input-container {
+    position: relative;
+    width: 300px;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #F37B2A;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
+}
+
+input[type="text"]:focus {
+    border-color: #E46424;
+    box-shadow: 0 0 8px rgba(255, 159, 16, 0.5);
+}
+
+/* Placeholder Styling */
+input[type="text"]::placeholder {
+    color: #999;
+    font-style: italic;
+}

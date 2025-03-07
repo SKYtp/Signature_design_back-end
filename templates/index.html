@@ -1,64 +1,379 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generate Image</title>
+    <title>Signature Design Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/main_style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/check_box.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/select-box.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/input-box.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='styles/popup.css') }}">
 </head>
 <body>
-    <h1>Click to Generate Image</h1>
-    
-    <!-- Button to trigger image generation -->
-    <button id="generate-btn-1">Generate ส บริวาร 1</button>
-    <button id="generate-btn-2">Generate ส ประธาน 2</button>
-    <button id="generate-btn-3">Generate ข บริวาร</button>
-    
-    <!-- Area to display the generated image -->
-    <h2>Generated Image</h2>
-    <img id="generated_image_starter" src="" alt="" style="max-width: 500px;" />
-    <img id="generated_image_follower" src="" alt="" style="max-width: 500px;" />
-
-    
+    <!-- Loader Overlay -->
+    <div class="loader-overlay" id="loaderPopup">
+        <div class="loader"></div>
+    </div>
+    <div id="popup" class="popup">
+        <p>&#10004; Inquiry Complete</p>
+        <button onclick="closePopup()">OK</button>
+    </div>
+    <ul>
+        <li><a href="#title_name">Generator</a></li>
+        <li><a href="#sig_img">Signture Image</a></li>
+        <li><a href="#inquiry">แบบสอบถาม</a></li>
+        <!-- <li><a href="#about">About</a></li> -->
+    </ul>
+    <div class="container">
+        <div class="title" id="title_name">Signature Design Generator</div>
+        <div class="profile-card div_main_input" id="generator">
+            <label class="label-text-1" id="label_generator">ชื่อจริง(ภาษาไทย):</label>
+            <div class="input-container">
+                <input type="text" id="name_input" oninput="validateThai(this)" placeholder="พิมพ์ชื่อจริงที่นี่...">
+            </div>
+            <label class="label-text-1">ลักษณะประธาน:</label>
+            <div class="custom-select">
+                <select id="boss" class="select-box">
+                    <option value="round">ตัวกลม (ความอ่อนโยน, เข้าถึงได้ง่าย)</option>
+                    <option value="edge">ตัวเหลี่ยม (ความเด็ดขาด, ความกล้าหาญ)</option>
+                </select>
+            </div>
+            <label class="label-text-1">ความเอียง:</label>
+            <div class="custom-select">
+                <select id="tilt" class="select-box">
+                    <option value="none">แนวระนาบ (บ่งบอกถึงความมั่นคงทางอารมณ์และจิตใจ)</option>
+                    <option value="tilt_up">เอียงขึ้น (แสดงถึงความทะเยอทะยานสูง)</option>
+                </select>
+            </div>
+            <label class="label-text-1">สัญลักษณ์:</label>
+            <div class="custom-select">
+                <select id="symbol" class="select-box">
+                    <option value="none">ไม่มี</option>
+                    <option value="omega">โอเมก้า (การเจรจาต่อรอง)</option>
+                    <option value="loop">ห่วง (มีความเอื้ออาทรต่อคนใกล้ชิด)</option>
+                </select>
+            </div>
+            <br>
+            <div class="checkbox-wrapper-42">
+                <input id="checkbox_point" type="checkbox" value="none"/>
+                <label class="cbx" for="checkbox_point"></label>
+                <label class="lbl" for="checkbox_point">จุด (ความมั่นใจ)</label>
+            </div>
+            <div class="checkbox-wrapper-42">
+                <input id="checkbox_line" type="checkbox" value="none"/>
+                <label class="cbx" for="checkbox_line"></label>
+                <label class="lbl" for="checkbox_line">เส้น (มีคนสนับสนุน, เกื้อหนุน)</label>
+            </div>
+            <!-- <div class="checkbox-wrapper-42">
+                <input id="checkbox_cir" type="checkbox" value="none"/>
+                <label class="cbx" for="checkbox_cir"></label>
+                <label class="lbl" for="checkbox_cir">วงกลม (ความคิดสร้างสรรค์)</label>
+            </div> -->
+            <br>
+            <button class="button btn-green" onclick="gen_signture()">Generate</button>
+        </div>
+        <div class="profile-card display_sig" style="display:none" id="dis_sig">
+            <div id="show_img">
+                <img alt="final_image" class="signature_img" id="sig_img">
+            </div>
+            <div class="box box-small">
+                    <p class="meaning_text">ความหมายของลายเซ็น</p>
+                    <p id="information" class="meaning"></p>
+            </div>
+            <div class="box box-extra">
+                <p id="show_point"></p>
+            </div>
+            <button class="button btn-blue btn-blue2" onclick="svg_button()">ดาวน์โหลดเป็นไฟล์ SVG</button>
+        </div>
+        <div class="profile-card" id="inquiry">
+            <h2>แบบสอบถาม</h2>
+            <div>
+                <p>ความเหมาะสมของลายเซ็นกับความบุคคล</p>
+                <div class="star-rating" data-rating="0">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                    <span class="star" data-value="5">&#9733;</span>
+                </div>
+                <p>ความแม่นยำในการออกแบบลายเซ็นจากชื่อที่ป้อน</p>
+                <div class="star-rating" data-rating="0">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                    <span class="star" data-value="5">&#9733;</span>
+                </div>
+                <p>ความหลากหลายของตัวเลือก</p>
+                <div class="star-rating" data-rating="0">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                    <span class="star" data-value="5">&#9733;</span>
+                </div>
+                <p>ความคล้ายกับลายเซ็นที่เขียนด้วยมือจริงของลายเซ็นที่ออกแบบ</p>
+                <div class="star-rating" data-rating="0">
+                    <span class="star" data-value="1">&#9733;</span>
+                    <span class="star" data-value="2">&#9733;</span>
+                    <span class="star" data-value="3">&#9733;</span>
+                    <span class="star" data-value="4">&#9733;</span>
+                    <span class="star" data-value="5">&#9733;</span>
+                </div>
+            </div>
+            <br>
+            <button class="button" onclick="submit_button()">Submit</button>
+        </div>
+        <!-- Buttons to Show/Hide Loader -->
+        <!-- <button onclick="showLoader()">Show Loader</button>
+        <button onclick="hideLoader()">Hide Loader</button> -->
+    </div>
+    <script src="https://cdn.jsdelivr.net/gh/jankovicsandras/imagetracerjs/imagetracer_v1.2.6.js"></script>
     <script>
-        // Add click event listener to the button
-        document.getElementById("generate-btn-1").addEventListener("click", function() {
-            // Send an AJAX request to the backend to generate the image
-            fetch('/generate_image_starter_curve')
-                .then(response => response.json())
-                .then(data => {
-                    // Set the base64 string as the src of the image tag
-                    document.getElementById("generated_image_starter").src = "data:image/png;base64," + data.image;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        });
+        let data_keep;
+        let option_keep;
+        function showLoader() {
+            document.getElementById("loaderPopup").style.display = "flex";
+        }
 
-        document.getElementById("generate-btn-2").addEventListener("click", function() {
-            // Send an AJAX request to the backend to generate the image
-            fetch('/generate_image_starter_hard')
-                .then(response => response.json())
-                .then(data => {
-                    // Set the base64 string as the src of the image tag
-                    document.getElementById("generated_image_starter").src = "data:image/png;base64," + data.image;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+        function hideLoader() {
+            document.getElementById("loaderPopup").style.display = "none";
+        }
+        function validateThai(input) {
+            input.value = input.value.replace(/[^ก-ฮเแโใไะาำุูึืัิี็่้๊๋์]/g, '');
+        }
+        // check box
+        const checkboxLine = document.getElementById('checkbox_line');
+        const checkboxpoint = document.getElementById('checkbox_point');
+        const checkboxcir = document.getElementById('checkbox_cir');
+        checkboxLine.addEventListener('change', () => {
+        if (checkboxLine.checked) {
+            checkboxLine.value = "checked_line";
+        } else {
+            checkboxLine.value = "none";
+        }
         });
+        checkboxpoint.addEventListener('change', () => {
+        if (checkboxpoint.checked) {
+            checkboxpoint.value = "checked_point";
+        } else {
+            checkboxpoint.value = "none";
+        }
+        });
+        // checkboxcir.addEventListener('change', () => {
+        // if (checkboxcir.checked) {
+        //     checkboxcir.value = "checked_circle";
+        // } else {
+        //     checkboxcir.value = "none";
+        // }
+        // });
+    
+        // Star rating functionality
+        document.querySelectorAll('.star-rating').forEach(rating => {
+            rating.addEventListener('click', function (e) {
+                if (e.target.classList.contains('star')) {
+                    let value = e.target.getAttribute('data-value');
+                    let stars = this.querySelectorAll('.star');
+                    stars.forEach(star => {
+                        star.classList.remove('active');
+                        if (star.getAttribute('data-value') <= value) {
+                            star.classList.add('active');
+                        }
+                    });
+                    this.setAttribute('data-rating', value);
+                }
+            });
+        });
+        // rating
+        async function submit_button(){
+            if (typeof data_keep === "undefined") {
+                alert("Please Generate first");
+                return
+            }
+            document.getElementById("loaderPopup").style.display = "flex";
+            let ratings = {};
+            document.querySelectorAll('.star-rating').forEach((rating, index) => {
+                ratings[`category_${index + 1}`] = rating.getAttribute('data-rating');
+            });
+            ratings["image"] = data_keep.image;
+            ratings["name_input"] = option_keep.name;
+            ratings["boss"] = option_keep.boss;
+            ratings["tilt"] = option_keep.tilt;
+            ratings["symbol"] = option_keep.symbol;
+            ratings["checkbox_point"] = option_keep.point;
+            ratings["checkbox_line"] = option_keep.line;
+            // ratings["checkbox_cir"] = option_keep.point;
+            ratings["sig_point"] = data_keep.points;
+            ratings["text"] = data_keep.text;
+            // console.log(JSON.stringify(ratings));
+            await fetch("http://localhost:8080/inquiry", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(ratings)
+            })
+            .then(response => response.json())  // Expect JSON, not a blob
+            .then(data => {
+                console.log(data.receivedData)
+                // alert("Inquiry complete!!!");
+            })
+            .catch(error => {
+                console.error("Error sending JSON:", error)
+                document.getElementById("loaderPopup").style.display = "none";
+                alert(`${error} > Please press Submit again`);
+            });
+            document.getElementById("loaderPopup").style.display = "none";
+            document.getElementById('popup').style.display = 'block';
+        }
+        // Generate button
+        let sig_image = "";
+        async function gen_signture() {
+            if(document.getElementById("name_input").value == ""){
+                alert("input Name first!!!");
+                return
+            }
+            document.getElementById("loaderPopup").style.display = "flex";
+            // send name and options
+            console.log(document.getElementById("name_input").value)
+            const jsonData = {
+                name: document.getElementById("name_input").value,
+                boss: document.getElementById('boss').value,
+                tilt: document.getElementById('tilt').value,
+                symbol: document.getElementById('symbol').value,
+                point: document.getElementById("checkbox_point").value,
+                line: document.getElementById("checkbox_line").value,
+                // circle: document.getElementById('checkbox_cir').value
+            };
 
-        document.getElementById("generate-btn-3").addEventListener("click", function() {
-            // Send an AJAX request to the backend to generate the image
-            fetch('/generate_image_follower')
-                .then(response => response.json())
-                .then(data => {
-                    // Set the base64 string as the src of the image tag
-                    document.getElementById("generated_image_follower").src = "data:image/png;base64," + data.image;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        });
+            option_keep = jsonData;
+
+            await fetch("http://localhost:8080/from-data-to-image", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(response => response.json())  // Expect JSON, not a blob
+            .then(data => {
+                if (data.image) {
+                    document.getElementById("sig_img").src = data.image;  // Use Base64 image
+                    sig_image = data.image;
+                    console.log(data.image)
+                    data_keep = data
+                } else {
+                    console.error("No image received:", data);
+                }
+            })
+            .catch(error => {
+                console.error("Error sending JSON:", error)
+                document.getElementById("loaderPopup").style.display = "none";
+                alert(`${error} > Please press Generate again`);
+            });
+            // const pointsObject = JSON.parse(data_keep.points);
+            const pointsObject = data_keep.points;
+            let point1 = pointsObject.point1;
+            let point2 = pointsObject.point2;
+            let point3 = pointsObject.point3;
+            let point4 = pointsObject.point4;
+            let point5 = pointsObject.point5;
+            let sum_point = point1+point2+point3+point4+point5
+            console.log(data_keep.points)
+            document.getElementById("information").innerText = data_keep.text;
+            document.getElementById("show_point").innerHTML = `
+    <style>
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Arial, sans-serif;
+        }
+        .score-table th, .score-table td {
+            padding: 10px 15px;
+            text-align: left;
+        }
+        .score-table th {
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .score-table td {
+            border-bottom: 1px solid #ddd;
+        }
+        .score-table td:last-child {
+            text-align: right;
+            width: 50px; /* Adjust width for numbers */
+        }
+        .score-table .total {
+            font-weight: bold;
+            text-align: right;
+            background-color: #f4f4f4;
+        }
+    </style>
+    <table class="score-table">
+        <tr>
+            <th>การให้คะแนน</th>
+            <th>คะแนน</th>
+        </tr>
+        <tr>
+            <td>1. ตำแหน่งประธานต้องอยู่ในระนาบเดียวกับตำแหน่งบริวาร</td>
+            <td>${point1}</td>
+        </tr>
+        <tr>
+            <td>2. ความสูงบริวารต้องเป็นเศษหนึ่งส่วนสองของความสูงประธาน</td>
+            <td>${point2}</td>
+        </tr>
+        <tr>
+            <td>3. ประธานกับบริวารต้องเว้นว่างเป็นเศษหนึ่งส่วนสองของความสูงบริวาร</td>
+            <td>${point3}</td>
+        </tr>
+        <tr>
+            <td>4. ตัวอักษรในลายเซ็นจะต้องไม่มีการขาดของเส้นภายในตัวอักษร</td>
+            <td>${point4}</td>
+        </tr>
+        <tr>
+            <td>5. ประธานต้องไม่มีเส้นตัดกันที่เกิดจากการเซ็น</td>
+            <td>${point5}</td>
+        </tr>
+        <tr>
+            <td class="total">รวม</td>
+            <td class="total">${sum_point.toFixed(5)}</td>
+        </tr>
+    </table>
+`;
+            if(document.getElementById("dis_sig").style.display == "none"){
+                document.getElementById("dis_sig").style.display ="flex";
+            }
+            document.getElementById("loaderPopup").style.display = "none";
+
+        }
+        // to svg
+        function convertBase64ToSVG(base64Image) {
+            ImageTracer.imageToSVG(base64Image, function (svgstr) {
+                downloadSVG(svgstr, "converted.svg");
+            });
+        }
+
+        function downloadSVG(svgContent, filename) {
+            const blob = new Blob([svgContent], { type: "image/svg+xml" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        function svg_button(){
+            if(sig_image == ""){
+                alert("Generate image first")
+            }else{
+                convertBase64ToSVG(sig_image);
+            }
+        }
+        function closePopup() {
+            document.getElementById('popup').style.display = 'none';
+        }
     </script>
 </body>
 </html>
