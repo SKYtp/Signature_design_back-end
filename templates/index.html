@@ -47,7 +47,7 @@
                     <option value="tilt_up">เอียงขึ้น (แสดงถึงความทะเยอทะยานสูง)</option>
                 </select>
             </div>
-            <label class="label-text-1">สัญลักษณ์:</label>
+            <label class="label-text-1">วิธีการเชื่อม:</label>
             <div class="custom-select">
                 <select id="symbol" class="select-box">
                     <option value="none">ไม่มี</option>
@@ -215,10 +215,20 @@
                 },
                 body: JSON.stringify(ratings)
             })
-            .then(response => response.json())  // Expect JSON, not a blob
+            .then(async response => {
+                if (!response.ok) {
+                    // ถ้าสถานะ HTTP ไม่ใช่ 200-299 ให้โยน error ออกไป
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Unknown error from server");
+                    alert(`Please press Submit again`);
+                }
+                document.getElementById('popup').style.display = 'block';
+                return response.json();
+            })
             .then(data => {
                 console.log(data.receivedData)
                 // alert("Inquiry complete!!!");
+                document.getElementById("loaderPopup").style.display = "none";
             })
             .catch(error => {
                 console.error("Error sending JSON:", error)
@@ -226,13 +236,16 @@
                 alert(`${error} > Please press Submit again`);
             });
             document.getElementById("loaderPopup").style.display = "none";
-            document.getElementById('popup').style.display = 'block';
         }
         // Generate button
         let sig_image = "";
         async function gen_signture() {
             if(document.getElementById("name_input").value == ""){
                 alert("input Name first!!!");
+                return
+            }
+            if(!checkFirstThaiConsonant(document.getElementById("name_input").value)){
+                alert("พยัญชนะไทยตัวแรกต้องเป็น ว, ส, ป");
                 return
             }
             document.getElementById("loaderPopup").style.display = "flex";
@@ -373,6 +386,10 @@
         }
         function closePopup() {
             document.getElementById('popup').style.display = 'none';
+        }
+        function checkFirstThaiConsonant(str) {
+            const firstChar = str.replace(/^[เแโใไ]+/, "").charAt(0);
+            return ["ว", "ส", "ป"].includes(firstChar);
         }
     </script>
 </body>

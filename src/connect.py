@@ -196,7 +196,7 @@ def load_model(position, name: str, model_dir: str=r'./model'):
     #f_pos = ['เ']
 
     if position==0:
-        model_path = os.path.join(model_dir, "starter", f'{name}_start.pt')
+        model_path = os.path.join(model_dir, "starter", f'{name}.pt')
         generator = StarterGenerator(z_dim=z_dim)
     elif position==10:
         model_path = os.path.join(model_dir, "starter", "vowel", f'{name}ต้น.pt')
@@ -516,17 +516,17 @@ def genImage(name, style, nothing_omega_loop):
                 c = consonant[2]
                 generator = load_model(1,c,model_path).to(device)
                 pic = rgb2gray(generate(1,generator))
-                while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                     pic = rgb2gray(generate(1,generator))
                 
-                h_ratio = compare_text_height(image[0],pic)[1]
+                h_ratio = compare_text_height(image[1],pic)[1]
                 image.append(pic)
                 if nothing_omega_loop == 0:
                     for i in range(len(consonant)-3):
                         c = consonant[i+3]
                         generator = load_model(1,c,model_path).to(device)
                         pic = rgb2gray(generate(1,generator))
-                        while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                        while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                             pic = rgb2gray(generate(1,generator))
                             
                         image.append(pic)
@@ -537,10 +537,10 @@ def genImage(name, style, nothing_omega_loop):
                         c = consonant[3]
                         generator = load_model(1,c,model_path).to(device)
                         pic = rgb2gray(generate(1,generator))
-                        while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                        while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                             pic = rgb2gray(generate(1,generator))
                 
-                        h_ratio = compare_text_height(image[0],pic)[1]
+                        h_ratio = compare_text_height(image[1],pic)[1]
                         image.append(pic)
                         for i in range(len(consonant)-5):    
                             if nothing_omega_loop == 1:
@@ -548,7 +548,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 0
                                     image.append(pic)
@@ -557,7 +557,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 1
                                     image.append(pic)
@@ -565,7 +565,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 0
                                     image.append(pic)
@@ -573,7 +573,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 1
                                     image.append(pic)
@@ -582,7 +582,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 0
                                     image.append(pic)
@@ -591,7 +591,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 1
                                     image.append(pic)
@@ -599,7 +599,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 0
                                     image.append(pic)
@@ -607,7 +607,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 1
                                     image.append(pic)
@@ -618,7 +618,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 0
                                     image.append(pic)
@@ -627,7 +627,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 1
                                     image.append(pic)
@@ -635,7 +635,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 0
                                     image.append(pic)
@@ -643,7 +643,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'โอเมก้าคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     omega = 1
                                     image.append(pic)
@@ -652,7 +652,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 0
                                     image.append(pic)
@@ -661,7 +661,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 1
                                     image.append(pic)
@@ -669,7 +669,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงหงาย'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 0
                                     image.append(pic)
@@ -677,7 +677,7 @@ def genImage(name, style, nothing_omega_loop):
                                     c = 'บ่วงคว่ำ'
                                     generator = load_model(3,c,model_path).to(device)
                                     pic = rgb2gray(generate(3,generator))
-                                    while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                                    while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                                         pic = rgb2gray(generate(3,generator))
                                     loop = 1
                                     image.append(pic)
@@ -685,7 +685,7 @@ def genImage(name, style, nothing_omega_loop):
                         c = consonant[-1]
                         generator = load_model(2,c,model_path).to(device)
                         pic = rgb2gray(generate(2,generator))
-                        while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
+                        while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
                             pic = rgb2gray(generate(2,generator))
                             
                         image.append(pic)
@@ -1029,12 +1029,14 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
                 if n==1 and consonant[0] in v_pos:
                     image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 25, cv2.BORDER_CONSTANT, value=(255, 255, 255))
                     image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
+                    padded_image[n] = cv2.copyMakeBorder(padded_image[n], 0, 0, 0, 25, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+                    image_concat2 = cv2.hconcat([padded_image[n], padded_image[n+1]])
                     if tilt:
-                        ro_image = rotate_image(image_concat1, 15)
+                        ro_image = rotate_image(image_concat2, 15)
                         final_sig_v = final_value_contour_allSig(ro_image)
                         angle_error = 15 - final_sig_v[2]
                     else:
-                        final_sig_v = final_value_contour_allSig(image_concat1)
+                        final_sig_v = final_value_contour_allSig(image_concat2)
                         angle_error = 0 - final_sig_v[2]
                 elif n == 0:
                     padded_image[n] = cv2.copyMakeBorder(padded_image[n], 0, 0, 0, 25, cv2.BORDER_CONSTANT, value=(255, 255, 255))
@@ -1058,12 +1060,14 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
             elif n==1 and consonant[0] in v_pos:
                 image_concat1 = cv2.copyMakeBorder(image_concat1, 0, 0, 0, 25, cv2.BORDER_CONSTANT, value=(255, 255, 255))
                 image_concat1 = cv2.hconcat([image_concat1, padded_image[n+1]])
+                padded_image[n] = cv2.copyMakeBorder(padded_image[n], 0, 0, 0, 25, cv2.BORDER_CONSTANT, value=(255, 255, 255))
+                image_concat2 = cv2.hconcat([padded_image[n], padded_image[n+1]])
                 if tilt:
-                    ro_image = rotate_image(image_concat1, 15)
+                    ro_image = rotate_image(image_concat2, 15)
                     final_sig_v = final_value_contour_allSig(ro_image)
                     angle_error = 15 - final_sig_v[2]
                 else:
-                    final_sig_v = final_value_contour_allSig(image_concat1)
+                    final_sig_v = final_value_contour_allSig(image_concat2)
                     angle_error = 0 - final_sig_v[2]
             elif n==0:
                 padded_image[n] = cv2.copyMakeBorder(padded_image[n], 0, 0, 0, 25, cv2.BORDER_CONSTANT, value=(255, 255, 255))
@@ -1317,13 +1321,24 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
     
     blur = cv2.GaussianBlur(image_concat1, (3,3), 0, borderType=cv2.BORDER_REPLICATE)
     base64_string = image_to_base64(image_concat1)
-    result = {
-        "image" : base64_string,
-        "head_broken" : head[0],
-        "head_cross" : head[1],
-        "head_is" : consonant[0],
-        "distance" : final_sig_v[0],
-        "tall_ratio" : h_ratio,
-        "angle" : angle_error
-    }
+    if consonant[0] in v_pos:
+        result = {
+            "image" : base64_string,
+            "head_broken" : head[0],
+            "head_cross" : head[1],
+            "head_is" : consonant[1],
+            "distance" : final_sig_v[0],
+            "tall_ratio" : h_ratio,
+            "angle" : angle_error
+        }
+    else:
+        result = {
+            "image" : base64_string,
+            "head_broken" : head[0],
+            "head_cross" : head[1],
+            "head_is" : consonant[0],
+            "distance" : final_sig_v[0],
+            "tall_ratio" : h_ratio,
+            "angle" : angle_error
+        }
     return result
