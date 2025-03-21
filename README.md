@@ -16,6 +16,7 @@ pip freeze > requirements.txt
 ### pytorch
 pip install torch torchvision torchaudio
 pip install ultralytics
+pip install quart-cors
 
 pip install Flask
 pip install Pillow
