@@ -20,5 +20,7 @@ pip install quart-cors
 
 pip install Flask
 pip install Pillow
+pip install aiomysql
+
 
 flask run --host=0.0.0.0 --port=8080
