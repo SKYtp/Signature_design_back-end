@@ -21,6 +21,7 @@ pip install Flask
 pip install Pillow
 pip install aiomysql
 pip install python-dotenv
+pip install hypercorn
 
 ### run
-flask run --host=0.0.0.0 --port=8080
+hypercorn app:app --bind 0.0.0.0:8080
