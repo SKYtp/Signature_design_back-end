@@ -208,7 +208,7 @@
             ratings["sig_point"] = data_keep.points;
             ratings["text"] = data_keep.text;
             // console.log(JSON.stringify(ratings));
-            await fetch("http://localhost:80/inquiry", {
+            await fetch("/inquiry", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -263,7 +263,7 @@
 
             option_keep = jsonData;
 
-            await fetch("http://localhost:80/from-data-to-image", {
+            await fetch("/from-data-to-image", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
