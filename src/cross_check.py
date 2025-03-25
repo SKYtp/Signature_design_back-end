@@ -5,7 +5,7 @@ device = "cpu"
 print(f"Running on: {device}")
 
 # Load the trained model
-model = YOLO("../model/best.pt")
+model = YOLO("./model/best.pt")
 model.to(device)  # Send the model to CPU
 
 # Perform prediction (Inference) for a single image
@@ -29,7 +29,7 @@ def get_cross(input_image_path):
     print(f"Running on: {device}")
 
     # Load the trained model
-    model = YOLO("../model/best.pt")
+    model = YOLO("./model/best.pt")
     model.to(device)  # Send the model to CPU
     # Perform prediction (Inference) for a single image
     image_path = input_image_path  # Specify the image path
