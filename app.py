@@ -1,5 +1,5 @@
 from quart import Quart, jsonify, render_template, request
-from quart_cors import cors  # For handling CORS in Quart (similar to Flask-CORS)
+from quart_cors import cors 
 import aiomysql
 import torch
 from src import get_contour, generator, option_to_meaning, value_to_point, connect, contrast
@@ -13,14 +13,14 @@ load_dotenv()
 
 async def get_db_connection():
     # Fetch values from environment variables
-    db_host = os.getenv('DB_HOST', 'localhost')  # Default to 'localhost' if not found
+    db_host = os.getenv('DB_HOST', 'localhost')
     db_user = os.getenv('DB_USER', 'root')
     db_password = os.getenv('DB_PASSWORD', 'idk_try_to_guess?')
     db_name = os.getenv('DB_NAME', 'db_name')
     db_min_size = int(os.getenv('DB_MIN_SIZE', 5))  
     db_max_size = int(os.getenv('DB_MAX_SIZE', 10)) 
 
-    # Create the connection pool using environment variables
+    # Create the connection pool using .env
     return await aiomysql.create_pool(
         host=db_host,
         user=db_user,
@@ -33,30 +33,6 @@ async def get_db_connection():
 @app.route('/')
 async def home():
     return await render_template("index.html")
-
-@app.route('/contour')
-async def test_contour():
-    image_path = './test_pic/'
-    all_contour = await get_contour.extract_all_contour_points(image_path + '21.png')
-    return jsonify(all_contour)
-
-@app.route('/generate_image_starter_curve')
-async def generate_image_starter_curve():
-    model = "ส_starter"
-    base64_image = await generator.generate(model, torch.tensor([0]))
-    return jsonify(image=base64_image, status=200)
-
-@app.route('/generate_image_starter_hard')
-async def generate_image_starter_hard():
-    model = "ส_starter"
-    base64_image = await generator.generate(model, torch.tensor([1]))
-    return jsonify(image=base64_image, status=200)
-
-@app.route('/generate_image_follower')
-async def generate_image_follower():
-    model = "ข_follower_front"
-    base64_image = await generator.generate(model)
-    return jsonify(image=base64_image, status=200)
 
 @app.route('/from-data-to-image', methods=['POST'])
 async def from_data_to_image():
@@ -94,7 +70,7 @@ async def from_data_to_image():
     else:
         sig_line = False
 
-    sig_data = connect.v_concat(sig_name, sig_style, sig_symbol, sig_tilt, sig_dot, sig_line)
+    sig_data = await connect.v_concat(sig_name, sig_style, sig_symbol, sig_tilt, sig_dot, sig_line)
 
     print("angle: ",sig_data.get("angle")," tall_ratio: ",sig_data.get("tall_ratio")," distance: ",sig_data.get("distance"), " head_broken: ",sig_data.get("head_broken"), " head_cross: ",sig_data.get("head_cross"))
 
@@ -125,26 +101,8 @@ async def from_data_to_image():
 async def insert_inquiry_to_db(data):
     pool = await get_db_connection()
     async with pool.acquire() as conn:
-        async with conn.cursor(aiomysql.DictCursor) as cursor:  # Ensure correct cursor type
-            query = """
-                INSERT INTO inquiries (category_1, category_2, category_3, category_4, image, 
-                                       name_input, boss, tilt, symbol, checkbox_point, checkbox_line, 
-                                       sig_point1, sig_point2, sig_point3, sig_point4, sig_point5, text)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """
-            
-            # Extract sig_point values safely
-            sig_point = data.get('sig_point', {})
-            point1 = int(sig_point.get('point1', 0))
-            point2 = int(sig_point.get('point2', 0))
-            point3 = int(sig_point.get('point3', 0))
-            point4 = int(sig_point.get('point4', 0))
-            point5 = int(sig_point.get('point5', 0))
+        async with conn.cursor(aiomysql.DictCursor) as cursor: 
 
-            # Print debug info
-            print(f"Sig Points: {point1}, {point2}, {point3}, {point4}, {point5}")
-
-            # Debug query parameters
             query = """
             INSERT INTO inquiries (
                 category_1, category_2, category_3, category_4, image, 
@@ -155,7 +113,7 @@ async def insert_inquiry_to_db(data):
             
             # Convert data to appropriate types
             params = (
-                int(data.get("category_1", 0)),  # Ensure integer
+                int(data.get("category_1", 0)), 
                 int(data.get("category_2", 0)),
                 int(data.get("category_3", 0)),
                 int(data.get("category_4", 0)),
@@ -164,9 +122,9 @@ async def insert_inquiry_to_db(data):
                 data.get("boss", ""),  # VARCHAR(255)
                 data.get("tilt", ""),  # VARCHAR(255)
                 data.get("symbol", ""),  # VARCHAR(255)
-                data.get("checkbox_point", ""),  # Now treated as VARCHAR(255)
-                data.get("checkbox_line", ""),  # Now treated as VARCHAR(255)
-                int(data.get("sig_point1", 0)),  # Ensure integer
+                data.get("checkbox_point", ""),  
+                data.get("checkbox_line", ""),  
+                int(data.get("sig_point1", 0)),  
                 int(data.get("sig_point2", 0)),
                 int(data.get("sig_point3", 0)),
                 int(data.get("sig_point4", 0)),
@@ -179,7 +137,7 @@ async def insert_inquiry_to_db(data):
             # Execute query
             await cursor.execute(query, params)
             await conn.commit()
-            return cursor.lastrowid  # Return inserted ID
+            return cursor.lastrowid 
 
 @app.route('/inquiry', methods=['POST'])
 async def get_inquiry():
@@ -190,21 +148,10 @@ async def get_inquiry():
         # Insert the inquiry data into the database
         inquiry_id = await insert_inquiry_to_db(received_data)
 
-        # Extract the individual sig_point values (you can return them in the response if needed)
-        sig_point = received_data.get('sig_point', {})
-        question_scores = {
-            "question_1_score": sig_point.get('point1', 0),
-            "question_2_score": sig_point.get('point2', 0),
-            "question_3_score": sig_point.get('point3', 0),
-            "question_4_score": sig_point.get('point4', 0),
-            "question_5_score": sig_point.get('point5', 0)
-        }
-
         return jsonify({
             "message": "Success",
             "receivedData": received_data,
             "inquiryId": inquiry_id,
-            "questionScores": question_scores  # Add the question scores to the response
         })
     except Exception as e:
         return jsonify({

@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from src.image_to_value import*
 from src.get_contour import*
+import asyncio
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def image_to_base64(image):
@@ -191,9 +193,8 @@ class vowelGenerator(nn.Module):
 model_cache = {}
 
 
-def load_model(position, name: str, model_dir: str=r'./model'):
+async def load_model(position, name: str, model_dir: str=r'./model'):
     z_dim:int=128
-    #f_pos = ['เ']
 
     if position==0:
         model_path = os.path.join(model_dir, "starter", f'{name}.pt')
@@ -224,7 +225,7 @@ def load_model(position, name: str, model_dir: str=r'./model'):
 
     # For the sake of testing, We are only using starter models only.
     if os.path.exists(model_path):
-        checkpoint = torch.load(model_path, map_location=torch.device('cpu'),weights_only=True) # Load a model
+        checkpoint = await asyncio.to_thread(torch.load, model_path, map_location=torch.device('cpu'))
         model_state_dict = checkpoint['generator_state_dict']
         generator.load_state_dict(model_state_dict) # Load the checkpoint
         generator.eval()  # Set to evaluation mode
@@ -234,16 +235,16 @@ def load_model(position, name: str, model_dir: str=r'./model'):
     else:
         raise FileNotFoundError(f"Model for label '{name}' not found at {model_path}")
 
-def generate(position, generator, label: int=None,):
+async def generate(position, generator, label: int=None,):
     z_dim = 128
     z = torch.randn(1, z_dim, device=device)
 
     # Generate image
     with torch.no_grad():
         if position == 0:
-            generated_image = generator(z, label)
+            generated_image = await asyncio.to_thread(generator, z, label)
         else:
-            generated_image = generator(z)
+            generated_image = await asyncio.to_thread(generator, z)
 
     # Rescale to [0, 1] range
     generated_image = (generated_image.squeeze() + 1) / 2
@@ -259,7 +260,7 @@ def rgb2gray(image):
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     return image
-def genImage_for_one(name, style):
+async def genImage_for_one(name, style):
     model_path = r"./model"
     f_pos = ['ว','ส','ป']
     image=[]
@@ -273,17 +274,19 @@ def genImage_for_one(name, style):
 
     if consonant[0] in f_pos:
         c = consonant[0]
-        generator = load_model(0,c,model_path).to(device)
-        pic = rgb2gray(generate(0,generator,torch.tensor([style])))
+        generator = await load_model(0, c, model_path)
+        generator = generator.to(device)
+        pic = rgb2gray(await generate(0, generator, torch.tensor([style])))
+
         while final_value_contour_head(pic)[0]:
-            pic = rgb2gray(generate(0,generator,torch.tensor([style])))
-            
+            pic = rgb2gray(await generate(0, generator, torch.tensor([style])))
+
         head = final_value_contour_head(pic)
         image.append(pic)
     return image , consonant , omega , loop , head ,  h_ratio
 
 
-def genImage(name, style, nothing_omega_loop):
+async def genImage(name, style, nothing_omega_loop):
     model_path = r"./model"
     v_pos = ['โ','ไ','ใ','เ']
     f_pos = ['ว','ส','ป']
@@ -303,29 +306,32 @@ def genImage(name, style, nothing_omega_loop):
             
     if consonant[0] in f_pos:
         c = consonant[0]
-        generator = load_model(0,c,model_path).to(device)
-        pic = rgb2gray(generate(0,generator,torch.tensor([style])))
+        generator = await load_model(0, c, model_path)
+        generator = generator.to(device)
+        pic = rgb2gray(await generate(0, generator, torch.tensor([style])))
         while final_value_contour_head(pic)[0]:
-            pic = rgb2gray(generate(0,generator,torch.tensor([style])))
+            pic = rgb2gray(await generate(0, generator, torch.tensor([style])))
             
         head = final_value_contour_head(pic)
         image.append(pic)
         if consonant[1] in s_pos:
             c = consonant[1]
-            generator = load_model(1,c,model_path).to(device)
-            pic = rgb2gray(generate(1,generator))
+            generator = await load_model(1,c,model_path)
+            generator = generator.to(device)
+            pic = rgb2gray(await generate(1,generator))
             while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                pic = rgb2gray(generate(1,generator))
+                pic = rgb2gray(await generate(1,generator))
             
             h_ratio = compare_text_height(image[0],pic)[1]
             image.append(pic)
             if nothing_omega_loop == 0:
                 for i in range(len(consonant)-2):
                     c = consonant[i+2]
-                    generator = load_model(1,c,model_path).to(device)
-                    pic = rgb2gray(generate(1,generator))
+                    generator = await load_model(1,c,model_path)
+                    generator = generator.to(device)
+                    pic = rgb2gray(await generate(1,generator))
                     while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                        pic = rgb2gray(generate(1,generator))
+                        pic = rgb2gray(await generate(1,generator))
                         
                     image.append(pic)
 
@@ -333,10 +339,11 @@ def genImage(name, style, nothing_omega_loop):
             else:
                 if consonant[1] in ['โ','ไ','ใ','เ','า']:
                     c = consonant[2]
-                    generator = load_model(1,c,model_path).to(device)
-                    pic = rgb2gray(generate(1,generator))
+                    generator = await load_model(1,c,model_path)
+                    generator = generator.to(device)
+                    pic = rgb2gray(await generate(1,generator))
                     while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                        pic = rgb2gray(generate(1,generator))
+                        pic = rgb2gray(await generate(1,generator))
             
                     h_ratio = compare_text_height(image[0],pic)[1]
                     image.append(pic)
@@ -344,69 +351,77 @@ def genImage(name, style, nothing_omega_loop):
                         if nothing_omega_loop == 1:
                             if consonant[2] in s_pos_top:
                                 c = 'โอเมก้าหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 0
                                 image.append(pic)
         
                             elif consonant[2] in s_pos_bottom:
                                 c = 'โอเมก้าคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 1
                                 image.append(pic)
                             elif consonant[-1] in l_pos_startTop:
                                 c = 'โอเมก้าหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 0
                                 image.append(pic)
                             else:
                                 c = 'โอเมก้าคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 1
                                 image.append(pic)
                         else:
                             if consonant[2] in s_pos_top:
                                 c = 'บ่วงหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 0
                                 image.append(pic)
         
                             elif consonant[2] in s_pos_bottom:
                                 c = 'บ่วงคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 1
                                 image.append(pic)
                             elif consonant[-1] in l_pos_startTop:
                                 c = 'บ่วงหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 0
                                 image.append(pic)
                             else:
                                 c = 'บ่วงคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 1
                                 image.append(pic)
                 else:
@@ -414,77 +429,86 @@ def genImage(name, style, nothing_omega_loop):
                         if nothing_omega_loop == 1:
                             if consonant[1] in s_pos_top:
                                 c = 'โอเมก้าหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 0
                                 image.append(pic)
         
                             elif consonant[1] in s_pos_bottom:
                                 c = 'โอเมก้าคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 1
                                 image.append(pic)
                             elif consonant[-1] in l_pos_startTop:
                                 c = 'โอเมก้าหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 0
                                 image.append(pic)
                             else:
                                 c = 'โอเมก้าคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 omega = 1
                                 image.append(pic)
                         else:
                             if consonant[1] in s_pos_top:
                                 c = 'บ่วงหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 0
                                 image.append(pic)
         
                             elif consonant[1] in s_pos_bottom:
                                 c = 'บ่วงคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 1
                                 image.append(pic)
                             elif consonant[-1] in l_pos_startTop:
                                 c = 'บ่วงหงาย'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 0
                                 image.append(pic)
                             else:
                                 c = 'บ่วงคว่ำ'
-                                generator = load_model(3,c,model_path).to(device)
-                                pic = rgb2gray(generate(3,generator))
+                                generator = await load_model(3,c,model_path)
+                                generator = generator.to(device)
+                                pic = rgb2gray(await generate(3,generator))
                                 while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                                    pic = rgb2gray(generate(3,generator))
+                                    pic = rgb2gray(await generate(3,generator))
                                 loop = 1
                                 image.append(pic)
                 if consonant[-1] in l_pos:
                     c = consonant[-1]
-                    generator = load_model(2,c,model_path).to(device)
-                    pic = rgb2gray(generate(2,generator))
+                    generator = await load_model(2,c,model_path)
+                    generator = generator.to(device)
+                    pic = rgb2gray(await generate(2,generator))
                     while is_broken_line(pic,c) or compare_text_height(image[0],pic)[0]:
-                        pic = rgb2gray(generate(2,generator))
+                        pic = rgb2gray(await generate(2,generator))
                         
                     image.append(pic)
                     return image , consonant , omega , loop , head ,h_ratio 
@@ -496,38 +520,42 @@ def genImage(name, style, nothing_omega_loop):
             return None
     elif consonant[0] in v_pos:
         c = consonant[0]
-        generator = load_model(10,c,model_path).to(device)
-        pic = rgb2gray(generate(10,generator,))
+        generator = await load_model(10,c,model_path)
+        generator = generator.to(device)
+        pic = rgb2gray(await generate(10,generator,))
         while final_value_contour_head(pic)[0]:
-            pic = rgb2gray(generate(10,generator))
+            pic = rgb2gray(await generate(10,generator))
             
         head = final_value_contour_head(pic)
         image.append(pic)
         if consonant[1] in f_pos:
             c = consonant[1]
-            generator = load_model(0,c,model_path).to(device)
-            pic = rgb2gray(generate(0,generator,torch.tensor([style])))
+            generator = await load_model(0,c,model_path)
+            generator = generator.to(device)
+            pic = rgb2gray(await generate(0,generator,torch.tensor([style])))
             while final_value_contour_head(pic)[0]:
-                pic = rgb2gray(generate(0,generator,torch.tensor([style])))
+                pic = rgb2gray(await generate(0,generator,torch.tensor([style])))
                 
             head = final_value_contour_head(pic)
             image.append(pic)
             if consonant[2] in s_pos:
                 c = consonant[2]
-                generator = load_model(1,c,model_path).to(device)
-                pic = rgb2gray(generate(1,generator))
+                generator = await load_model(1,c,model_path)
+                generator = generator.to(device)
+                pic = rgb2gray(await generate(1,generator))
                 while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                    pic = rgb2gray(generate(1,generator))
+                    pic = rgb2gray(await generate(1,generator))
                 
                 h_ratio = compare_text_height(image[1],pic)[1]
                 image.append(pic)
                 if nothing_omega_loop == 0:
                     for i in range(len(consonant)-3):
                         c = consonant[i+3]
-                        generator = load_model(1,c,model_path).to(device)
-                        pic = rgb2gray(generate(1,generator))
+                        generator = await load_model(1,c,model_path)
+                        generator = generator.to(device)
+                        pic = rgb2gray(await generate(1,generator))
                         while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                            pic = rgb2gray(generate(1,generator))
+                            pic = rgb2gray(await generate(1,generator))
                             
                         image.append(pic)
 
@@ -535,10 +563,11 @@ def genImage(name, style, nothing_omega_loop):
                 else:
                     if consonant[2] in ['โ','ไ','ใ','เ','า']:
                         c = consonant[3]
-                        generator = load_model(1,c,model_path).to(device)
-                        pic = rgb2gray(generate(1,generator))
+                        generator = await load_model(1,c,model_path)
+                        generator = generator.to(device)
+                        pic = rgb2gray(await generate(1,generator))
                         while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                            pic = rgb2gray(generate(1,generator))
+                            pic = rgb2gray(await generate(1,generator))
                 
                         h_ratio = compare_text_height(image[1],pic)[1]
                         image.append(pic)
@@ -546,69 +575,77 @@ def genImage(name, style, nothing_omega_loop):
                             if nothing_omega_loop == 1:
                                 if consonant[3] in s_pos_top:
                                     c = 'โอเมก้าหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 0
                                     image.append(pic)
             
                                 elif consonant[3] in s_pos_bottom:
                                     c = 'โอเมก้าคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 1
                                     image.append(pic)
                                 elif consonant[-1] in l_pos_startTop:
                                     c = 'โอเมก้าหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 0
                                     image.append(pic)
                                 else:
                                     c = 'โอเมก้าคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 1
                                     image.append(pic)
                             else:
                                 if consonant[3] in s_pos_top:
                                     c = 'บ่วงหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 0
                                     image.append(pic)
             
                                 elif consonant[3] in s_pos_bottom:
                                     c = 'บ่วงคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 1
                                     image.append(pic)
                                 elif consonant[-1] in l_pos_startTop:
                                     c = 'บ่วงหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 0
                                     image.append(pic)
                                 else:
                                     c = 'บ่วงคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 1
                                     image.append(pic)
                     else:
@@ -616,77 +653,86 @@ def genImage(name, style, nothing_omega_loop):
                             if nothing_omega_loop == 1:
                                 if consonant[2] in s_pos_top:
                                     c = 'โอเมก้าหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 0
                                     image.append(pic)
             
                                 elif consonant[2] in s_pos_bottom:
                                     c = 'โอเมก้าคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 1
                                     image.append(pic)
                                 elif consonant[-1] in l_pos_startTop:
                                     c = 'โอเมก้าหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 0
                                     image.append(pic)
                                 else:
                                     c = 'โอเมก้าคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     omega = 1
                                     image.append(pic)
                             else:
                                 if consonant[2] in s_pos_top:
                                     c = 'บ่วงหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 0
                                     image.append(pic)
             
                                 elif consonant[2] in s_pos_bottom:
                                     c = 'บ่วงคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 1
                                     image.append(pic)
                                 elif consonant[-1] in l_pos_startTop:
                                     c = 'บ่วงหงาย'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 0
                                     image.append(pic)
                                 else:
                                     c = 'บ่วงคว่ำ'
-                                    generator = load_model(3,c,model_path).to(device)
-                                    pic = rgb2gray(generate(3,generator))
+                                    generator = await load_model(3,c,model_path)
+                                    generator = generator.to(device)
+                                    pic = rgb2gray(await generate(3,generator))
                                     while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                                        pic = rgb2gray(generate(3,generator))
+                                        pic = rgb2gray(await generate(3,generator))
                                     loop = 1
                                     image.append(pic)
                     if consonant[-1] in l_pos:
                         c = consonant[-1]
-                        generator = load_model(2,c,model_path).to(device)
-                        pic = rgb2gray(generate(2,generator))
+                        generator = await load_model(2,c,model_path)
+                        generator = generator.to(device)
+                        pic = rgb2gray(await generate(2,generator))
                         while is_broken_line(pic,c) or compare_text_height(image[1],pic)[0]:
-                            pic = rgb2gray(generate(2,generator))
+                            pic = rgb2gray(await generate(2,generator))
                             
                         image.append(pic)
                         return image , consonant , omega , loop , head ,h_ratio 
@@ -955,7 +1001,7 @@ def if_tilt(image, tilt):
         image = rotate_image(image,15)
     return image
 
-def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
+async def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
     v_pos = ['โ','ไ','ใ','เ']
     s_pos = ['ก','ข','ฃ','ค','ฅ','ฆ','ง','จ','ฉ','ช','ซ','ฌ','ญ','ฎ','ฏ','ฐ','ฑ','ฒ','ณ','ด','ต','ถ','ท','ธ','น','บ','ป','ผ','ฝ','พ','ฟ','ภ','ม','ย','ร','ล','ว','ศ','ษ','ส','ห','ฬ','อ','ฮ','โ','ไ','ใ','เ','า']
     cant_connect = ['ง','จ','ฉ','ฎ','ฏ','ล','ว','อ']
@@ -976,9 +1022,9 @@ def v_concat(name,style,nothing_omega_loop,tilt,dot,line):
     if len(name)<1:
         return 
     if len(consonant)<2:
-        image , consonant , omega , loop , head , h_ratio = genImage_for_one(name,style)
+        image , consonant , omega , loop , head , h_ratio = await genImage_for_one(name,style)
     else:
-        image , consonant , omega , loop , head , h_ratio = genImage(name,style,nothing_omega_loop)
+        image , consonant , omega , loop , head , h_ratio = await genImage(name,style,nothing_omega_loop)
     print(consonant)
     #for i in image:
     #    plt.imshow(i, cmap="gray", interpolation="none")
