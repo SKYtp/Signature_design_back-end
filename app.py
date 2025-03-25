@@ -161,6 +161,6 @@ async def get_inquiry():
 
 if __name__ == '__main__':
     try:
-        app.run(debug=True, port=8080)
+        app.run(debug=True, port=80)
     except Exception as e:
         print(f"App crashed: {e}")

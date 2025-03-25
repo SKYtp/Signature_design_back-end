@@ -24,4 +24,4 @@ pip install python-dotenv
 pip install hypercorn
 
 ### run
-hypercorn app:app --bind 0.0.0.0:8080
+hypercorn app:app --bind 0.0.0.0:80
