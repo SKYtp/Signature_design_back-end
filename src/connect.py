@@ -10,6 +10,7 @@ import numpy as np
 from src.image_to_value import*
 from src.get_contour import*
 import asyncio
+import aiofiles 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -754,7 +755,7 @@ def quadratic_bezier(t, p0, p1, p2):
     return (1-t)**2 * p0 + 2*(1-t)*t*p1 + t**2 * p2
 
 def front_find_right_top(image):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาบนขวาเริ่มขวา
     #หาจุดขวาสุด
     index_right=0
@@ -774,7 +775,7 @@ def front_find_right_top(image):
     return p0 , front_letter
 
 def front_find_right_bottom(image):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาจุดขวาสุด
     index_right=0
     for i, pos in enumerate(black_pixel_positions):
@@ -793,7 +794,7 @@ def front_find_right_bottom(image):
     return p0 , front_letter
 
 def back_find_left_top(image, width):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาจุดซ้ายสุด
     index_left=10000
     for i, pos in enumerate(black_pixel_positions):
@@ -811,7 +812,7 @@ def back_find_left_top(image, width):
     return p2 , back_letter
 
 def back_find_left_bottom(image, width):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาจุดซ้ายสุด
     index_left=10000
     for i, pos in enumerate(black_pixel_positions):
@@ -829,7 +830,7 @@ def back_find_left_bottom(image, width):
     return p2 , back_letter
 
 def back_find_top_left(image, width):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาจุดสูงสุด
     index_top=125
     for i, pos in enumerate(black_pixel_positions):
@@ -847,7 +848,7 @@ def back_find_top_left(image, width):
     return p2 , back_letter
 
 def back_find_bottom_left(image, width):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาจุดต่ำสุด
     index_bottom = 0
     for i, pos in enumerate(black_pixel_positions):
@@ -865,7 +866,7 @@ def back_find_bottom_left(image, width):
     return p2 , back_letter
 
 def back_find_left(image, width):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาจุดซ้ายสุด
     index_left=10000
     for i, pos in enumerate(black_pixel_positions):
@@ -877,7 +878,7 @@ def back_find_left(image, width):
     return p2 , back_letter
 
 def back_find_left_mid_from_bottom(image, width):
-    black_pixel_positions = np.column_stack(np.where(image <= 10))
+    black_pixel_positions = np.column_stack(np.where(image <= 75))
     #หาจุดต่ำสุด
     index_bottom = 0
     for i, pos in enumerate(black_pixel_positions):
@@ -931,7 +932,7 @@ def dot_line(image, dot, line):
 
     if dot:
         if line:
-            black_pixel_positions = np.column_stack(np.where(image <= 10))
+            black_pixel_positions = np.column_stack(np.where(image <= 75))
             #หาจุดต่ำสุด
             index_bottom=0
             for i, pos in enumerate(black_pixel_positions):
@@ -954,7 +955,7 @@ def dot_line(image, dot, line):
             image = add_black_dots(image, dot_point, 3)
 
         else:
-            black_pixel_positions = np.column_stack(np.where(image <= 10))
+            black_pixel_positions = np.column_stack(np.where(image <= 75))
             #หาจุดต่ำสุด
             index_bottom=0
             for i, pos in enumerate(black_pixel_positions):
@@ -973,7 +974,7 @@ def dot_line(image, dot, line):
             image = add_black_dots(image,point, 3)
     else:
         if line:
-            black_pixel_positions = np.column_stack(np.where(image <= 10))
+            black_pixel_positions = np.column_stack(np.where(image <= 75))
             #หาจุดต่ำสุด
             index_bottom=0
             for i, pos in enumerate(black_pixel_positions):
