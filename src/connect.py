@@ -899,7 +899,7 @@ def back_find_left_mid_from_bottom(image, width):
         if pos[0]<=index_top and pos[0]>=index_top-25 and pos[1]<=index_left+3:
             index_top=pos[0]
             point_top=black_pixel_positions[i]
-    p2=np.array([point_top[1]+width+4 ,point_top[0]])
+    p2=np.array([point_top[1]+width ,point_top[0]])
     back_letter=0
     return p2 , back_letter
 
